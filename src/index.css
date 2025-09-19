@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for Mascate Runeria */
+@layer base {
+  body {
+    @apply font-sans antialiased;
+  }
+}
+
+@layer components {
+  /* Button variants */
+  .btn-primary {
+    @apply bg-gradient-to-r from-mascate-500 to-mascate-600 text-white font-semibold py-2 px-4 rounded-lg hover:from-mascate-600 hover:to-mascate-700 transition-all duration-300 shadow-lg;
+  }
+  
+  .btn-secondary {
+    @apply bg-gradient-to-r from-gray-500 to-gray-600 text-white font-semibold py-2 px-4 rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-300 shadow-lg;
+  }
+  
+  .btn-danger {
+    @apply bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-lg;
+  }
+  
+  /* Card styles */
+  .card {
+    @apply bg-white rounded-xl shadow-lg border border-gray-100 p-4;
+  }
+  
+  .card-header {
+    @apply text-lg font-bold text-mascate-900 mb-3;
+  }
+  
+  /* Form styles */
+  .form-input {
+    @apply w-full px-3 py-2 border border-mascate-200 rounded-lg focus:ring-2 focus:ring-mascate-500 focus:border-mascate-500 bg-mascate-50 text-base;
+  }
+  
+  .form-label {
+    @apply block text-sm font-medium text-mascate-800 mb-1;
+  }
+  
+  /* Navigation styles */
+  .nav-item {
+    @apply px-3 py-2 rounded-lg font-semibold transition-all duration-300 cursor-pointer;
+  }
+  
+  .nav-item-active {
+    @apply bg-gradient-to-r from-mascate-500 to-mascate-600 text-white shadow-lg;
+  }
+  
+  .nav-item-inactive {
+    @apply text-mascate-700 hover:bg-mascate-100;
+  }
+  
+  /* Alert styles */
+  .alert-warning {
+    @apply bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200 rounded-xl p-4 shadow-lg;
+  }
+  
+  .alert-success {
+    @apply bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-4 shadow-lg;
+  }
+  
+  .alert-danger {
+    @apply bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-200 rounded-xl p-4 shadow-lg;
+  }
+}
+
+@layer utilities {
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .glass-morphism {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+}
