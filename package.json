@@ -36,8 +36,7 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist node_modules/.vite",
     "prepare": "husky install",
-    "health-check": "npm run typecheck && npm run lint && npm run build",
-    "init-db": "node scripts/init-db.js"
+    "health-check": "npm run typecheck && npm run lint && npm run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
