@@ -3,6 +3,10 @@ import type { User, Product, StockMovement, ActivityLog } from '@/types';
 export interface DatabaseService {
   init(): Promise<void>;
   close(): Promise<void>;
+
+  // Authentication
+  login(email: string, password: string): Promise<{ success: boolean; user?: User; error?: string }>;
+
   getUsers(): Promise<User[]>;
   getUserById(id: string): Promise<User | null>;
   getUserByEmail(email: string): Promise<User | null>;
@@ -64,6 +68,36 @@ class ApiDatabaseService implements DatabaseService {
     // Não há conexão para fechar no cliente HTTP
     this.initialized = false;
     console.log('🔌 Cliente API fechado');
+  }
+
+  // Authentication method
+  async login(email: string, password: string): Promise<{ success: boolean; user?: User; error?: string }> {
+    try {
+      const response = await fetch(`${this.baseUrl}/auth`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: data.error || `HTTP ${response.status}: ${response.statusText}`
+        };
+      }
+
+      return data;
+
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erro de conexão'
+      };
+    }
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {

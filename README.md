@@ -1,7 +1,6 @@
 # 🏆 Mascate Runeria - Controle de Caixa
 
 **Sistema SIMPLES de controle de estoque para casa noturna**
-
 Uma aplicação **super simples e rápida** para controle dos pequenos itens vendidos no caixa da casa noturna (seda, cigarros, chocolates, balas, etc.).
 
 > 🎯 **FOCO**: Dar baixa rápida nos produtos vendidos. Não é um PDV profissional, é apenas para controlar os "negocinho do caixa"!
@@ -9,17 +8,20 @@ Uma aplicação **super simples e rápida** para controle dos pequenos itens ven
 ## ✨ Features (Simplicidade em Primeiro Lugar!)
 
 ### 💰 **VENDAS RÁPIDAS** (Funcionalidade Principal)
+
 - **Botões rápidos**: -1, -2, -5 para vendas comuns
 - **Input personalizado**: Para quantidades específicas
 - **Visual claro**: Estoque atual bem visível
 - **Alertas automáticos**: Quando o produto está acabando
 
 ### 📦 **Gerenciamento de Produtos**
+
 - **Cadastro simples**: Nome, categoria, preços, estoque
 - **Visualização em cards**: Fácil de ver e editar
 - **Categorias básicas**: Doce, Fumo, Bebida, Outros
 
 ### 📈 **Controles Básicos**
+
 - **Dashboard**: Visão geral do estoque
 - **Autenticação**: Login simples (admin/admin para desenvolvimento)
 - **Persistência local**: Tudo salvo no browser (SQLite)
@@ -28,6 +30,7 @@ Uma aplicação **super simples e rápida** para controle dos pequenos itens ven
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - **React 19** - Interface de usuário moderna
 - **TypeScript** - Tipagem estática
 - **Vite** - Build tool e dev server
@@ -39,11 +42,11 @@ Uma aplicação **super simples e rápida** para controle dos pequenos itens ven
 - **Lucide React** - Ícones modernos
 
 ### Backend & Database
-- **Supabase** - Backend as a Service (auth, database)
-- **SQLite (sql.js)** - Database local no browser
+
 - **PostgreSQL** - Database principal via Supabase
 
 ### Desenvolvimento
+
 - **Vitest** - Framework de testes
 - **Testing Library** - Utilitários de teste
 - **ESLint + Prettier** - Code quality
@@ -53,6 +56,7 @@ Uma aplicação **super simples e rápida** para controle dos pequenos itens ven
 ## 🚀 Quick Start
 
 ### Pré-requisitos
+
 - Node.js 18+
 - npm ou pnpm
 - Conta no Supabase (opcional para desenvolvimento)
@@ -143,11 +147,13 @@ src/
 ## 🔐 Sistema de Autenticação
 
 ### Roles de Usuário
+
 - **Super Admin**: Acesso completo incluindo gestão de usuários
 - **Admin**: Gerenciamento de produtos e estoque (sem gestão de usuários)
 - **User**: Visualização e operações básicas de estoque
 
 ### 🔑 Credenciais de Desenvolvimento
+
 - **Usuário**: `admin`
 - **Senha**: `admin`
 - **Acesso**: Superadmin (acesso total)
@@ -156,12 +162,14 @@ src/
 ## 📊 Funcionalidades Principais
 
 ### Dashboard
+
 - KPIs em tempo real (total produtos, estoque baixo, valores)
 - Gráficos de níveis de estoque
 - Alertas de produtos com estoque crítico
 - Movimentações recentes
 
 ### Gestão de Produtos
+
 - CRUD completo com validação
 - Categorização por tipo (fumo, doce, bebida, etc.)
 - Controle de preços (compra/venda)
@@ -169,6 +177,7 @@ src/
 - Cálculo automático de margem de lucro
 
 ### Controle de Estoque
+
 - Tipos de movimentação:
   - 💰 **Venda** - Redução por venda ao cliente
   - 📦 **Entrada** - Reposição de estoque
@@ -179,6 +188,7 @@ src/
 ## 📋 Status do Desenvolvimento
 
 ### ✅ **FUNCIONANDO** (Pronto para Usar!)
+
 - [x] **💰 VENDAS RÁPIDAS** - Funcionalidade principal 100% funcional!
 - [x] **📦 Cadastro de Produtos** - CRUD completo e simples
 - [x] **📈 Dashboard** - Visão geral do estoque
@@ -190,12 +200,14 @@ src/
 ### 🎯 **O Essencial Está Pronto!**
 
 O sistema **JÁ FUNCIONA** para o propósito principal:
+
 1. **Cadastrar produtos** do caixa
 2. **Dar baixa rápida** quando alguém compra
 3. **Ver estoque atual** e alertas de produto acabando
 4. **Repor estoque** quando comprar mais produtos
 
 ### 🕰️ Melhorias Futuras (Se Necessário)
+
 - [ ] Integração com Supabase (para backup na nuvem)
 - [ ] PWA (instalar no celular)
 - [ ] Relatórios de vendas
@@ -206,6 +218,7 @@ O sistema **JÁ FUNCIONA** para o propósito principal:
 Para migrar dados do sistema anterior:
 
 1. **Backup dos dados existentes**:
+
    ```javascript
    // No console do browser do sistema anterior
    const backup = {
@@ -221,6 +234,7 @@ Para migrar dados do sistema anterior:
 ## 🎨 Design System
 
 ### Cores Principais
+
 ```css
 /* Mascate Gold */
 --mascate-500: #f1c535
@@ -232,6 +246,7 @@ Para migrar dados do sistema anterior:
 ```
 
 ### Classes Utilitárias Customizadas
+
 ```typescript
 // Botões
 <button className="btn-primary">Ação Principal</button>
@@ -263,6 +278,7 @@ Para migrar dados do sistema anterior:
 5. Abra um Pull Request
 
 ### Convenções de Código
+
 - Use TypeScript sempre que possível
 - Siga as regras do ESLint/Prettier
 - Escreva testes para novas funcionalidades
@@ -276,10 +292,5 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para de
 
 Para suporte técnico ou dúvidas sobre implementação:
 
-- 📧 Email: jordan@mascate.local  
 - 🐛 Issues: GitHub Issues
 - 📖 Docs: `/docs` para documentação técnica detalhada
-
----
-
-**Desenvolvido com ❤️ para o controle de estoque moderno de casas noturnas**
