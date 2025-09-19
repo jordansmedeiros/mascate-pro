@@ -9,7 +9,11 @@ import { ProdutosPage } from '@/features/products/components/ProdutosPage';
 import { EstoquePage } from '@/features/stock/components/EstoquePage';
 import { UsersPage } from '@/features/users/components/UsersPage';
 import { LogsPage } from '@/features/logs/components/LogsPage';
+import { ProfilePage } from '@/features/profile/components/ProfilePage';
+import { ChangePasswordPage } from '@/features/profile/components/ChangePasswordPage';
+import { ConfiguracoesPage } from '@/features/config/components/ConfiguracoesPage';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { CustomToaster } from '@/components/ui/Toast';
 
 // Protected Route wrapper
 interface ProtectedRouteProps {
@@ -65,18 +69,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
   return <>{children}</>;
 };
 
-// Temporary placeholder components for routes not yet implemented
-const ComingSoon: React.FC<{ title: string }> = ({ title }) => (
-  <div className="text-center py-12">
-    <div className="bg-mascate-50 border border-mascate-200 rounded-xl p-8 max-w-md mx-auto">
-      <h2 className="text-xl font-bold text-mascate-800 mb-2">{title}</h2>
-      <p className="text-mascate-600 mb-4">Esta página está sendo implementada.</p>
-      <p className="text-sm text-mascate-500">
-        🚧 Em breve você poderá acessar todas as funcionalidades!
-      </p>
-    </div>
-  </div>
-);
 
 // Main app routes
 const AppRoutes: React.FC = () => {
@@ -162,7 +154,30 @@ const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute>
             <AppLayout>
-              <ComingSoon title="⚙️ Configurações" />
+              <ConfiguracoesPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Profile routes */}
+      <Route
+        path="/perfil"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <ProfilePage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/alterar-senha"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <ChangePasswordPage />
             </AppLayout>
           </ProtectedRoute>
         }
@@ -181,6 +196,7 @@ const App: React.FC = () => {
       <BrowserRouter>
         <AuthProvider>
           <AppRoutes />
+          <CustomToaster />
         </AuthProvider>
       </BrowserRouter>
     </QueryProvider>

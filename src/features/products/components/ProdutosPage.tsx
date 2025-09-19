@@ -88,8 +88,7 @@ export const ProdutosPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header Simples */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-mascate-900">📦 Produtos</h1>
+      <div className="flex items-center justify-end">
         <Button
           variant="primary"
           onClick={() => {
@@ -106,6 +105,7 @@ export const ProdutosPage: React.FC = () => {
             });
             setShowForm(!showForm);
           }}
+          className="bg-mascate-green text-white hover:bg-green-700 border-mascate-green shadow-md transition-all duration-200 hover:shadow-lg"
         >
           <Plus className="h-4 w-4 mr-2" />
           {showForm ? 'Cancelar' : 'Novo Produto'}
@@ -176,7 +176,7 @@ export const ProdutosPage: React.FC = () => {
             />
 
             <div className="md:col-span-2 flex gap-3">
-              <Button type="submit" variant="primary" className="flex-1">
+              <Button type="submit" variant="primary" className="flex-1 bg-mascate-green text-white hover:bg-green-700 border-mascate-green">
                 {editingProduct ? '💾 Salvar Alterações' : '➕ Criar Produto'}
               </Button>
               <Button 

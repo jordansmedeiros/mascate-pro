@@ -4,7 +4,7 @@ import { getDatabase } from '@/services/db';
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -49,7 +49,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             await db.createActivityLog({
               user_id: currentUser.id,
               action: 'SESSION_RESTORED',
-              details: `Sessão restaurada para usuário ${currentUser.username}`,
+        details: `Sessão restaurada para usuário ${currentUser.displayName} (${currentUser.email})`,
               ip_address: '127.0.0.1',
               user_agent: navigator.userAgent,
             });
@@ -71,16 +71,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkExistingSession();
   }, []);
 
-  const login = async (username: string, password: string): Promise<{ success: boolean; error?: string }> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
       setIsLoading(true);
       const db = await getDatabase();
       
-      // For now, we'll use simple username/password until Supabase is integrated
+      // For now, we'll use simple email/password until Supabase is integrated
       // In the MVP, password was stored in plain text, so we'll match that for migration
       const users = await db.getUsers();
       const foundUser = users.find(u => 
-        u.username === username && 
+        u.email === email && 
         u.active
       );
       
@@ -90,14 +90,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       // Simple password check - in production this would be hashed
       // For the admin user created by seeding, we'll accept "admin" as password
-      const isValidPassword = (username === 'admin' && password === 'admin') || 
-                             (username === foundUser.username);
+      const isValidPassword = (email === 'admin@mascate.com' && password === 'admin') || 
+                             (email === foundUser.email);
       
       if (!isValidPassword) {
         await db.createActivityLog({
           user_id: foundUser.id,
           action: 'LOGIN_FAILED',
-          details: `Tentativa de login falhada para usuário ${username}`,
+          details: `Tentativa de login falhada para email ${email}`,
           ip_address: '127.0.0.1',
           user_agent: navigator.userAgent,
         });
@@ -114,7 +114,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await db.createActivityLog({
         user_id: updatedUser.id,
         action: 'LOGIN_SUCCESS',
-        details: `Login realizado com sucesso para usuário ${updatedUser.username}`,
+        details: `Login realizado com sucesso para usuário ${updatedUser.displayName} (${updatedUser.email})`,
         ip_address: '127.0.0.1',
         user_agent: navigator.userAgent,
       });
@@ -141,7 +141,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         await db.createActivityLog({
           user_id: user.id,
           action: 'LOGOUT',
-          details: `Logout realizado para usuário ${user.username}`,
+          details: `Logout realizado para usuário ${user.displayName} (${user.email})`,
           ip_address: '127.0.0.1',
           user_agent: navigator.userAgent,
         });

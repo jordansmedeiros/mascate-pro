@@ -1,16 +1,18 @@
-import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { NavLink, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/features/auth/context/AuthContext';
-import { Button } from '@/components/ui/Button';
+import { getAvatarIcon } from '@/constants/avatars';
 import { 
   LayoutDashboard, 
-  Package, 
+  Package,
   ShoppingCart, 
   Users, 
   ScrollText,
   Settings,
   LogOut,
-  User
+  ChevronDown,
+  UserCircle,
+  Key
 } from 'lucide-react';
 
 interface NavItem {
@@ -58,9 +60,24 @@ const navItems: NavItem[] = [
 export const TopNavbar: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleLogout = async () => {
     try {
+      setIsDropdownOpen(false);
       await logout();
       navigate('/login');
     } catch (error) {
@@ -81,42 +98,19 @@ export const TopNavbar: React.FC = () => {
     return userLevel >= requiredLevel;
   });
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'superadmin': return 'bg-red-500 text-white';
-      case 'admin': return 'bg-blue-500 text-white';
-      case 'user': return 'bg-gray-500 text-white';
-      default: return 'bg-gray-500 text-white';
-    }
-  };
-
-  const getRoleLabel = (role: string) => {
-    switch (role) {
-      case 'superadmin': return 'SuperAdmin';
-      case 'admin': return 'Admin';
-      case 'user': return 'Usuário';
-      default: return role;
-    }
-  };
 
   return (
     <nav className="bg-mascate-red shadow-md border-b-2 border-mascate-yellow">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
-          {/* Logo e Nome */}
-          <div className="flex items-center space-x-3">
-            <div className="bg-mascate-yellow p-2 rounded-lg shadow-sm">
-              <Package className="h-6 w-6 text-mascate-green" />
-            </div>
-            <div>
-              <h1 className="text-white font-bold text-lg tracking-wide">
-                MASCATE
-              </h1>
-              <p className="text-gray-200 text-xs -mt-1">
-                Controle de Estoque
-              </p>
-            </div>
+          {/* Logo */}
+          <div className="flex items-center">
+            <img 
+              src="/image.png" 
+              alt="Mascate Logo" 
+              className="h-12 w-auto" 
+            />
           </div>
 
           {/* Menu de Navegação Central */}
@@ -144,33 +138,66 @@ export const TopNavbar: React.FC = () => {
             </div>
           </div>
 
-          {/* Área do usuário */}
-          <div className="flex items-center space-x-3">
-            {/* Info do usuário */}
-            <div className="hidden sm:flex flex-col text-right">
-              <span className="text-white font-medium text-sm">
-                {user?.username}
-              </span>
-              <span className={`text-xs px-2 py-0.5 rounded-full inline-block w-fit ml-auto ${getRoleColor(user?.role || '')}`}>
-                {getRoleLabel(user?.role || '')}
-              </span>
-            </div>
-
-            {/* Avatar do usuário */}
-            <div className="bg-mascate-yellow p-2 rounded-full">
-              <User className="h-5 w-5 text-mascate-green" />
-            </div>
-
-            {/* Botão de logout */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLogout}
-              className="text-white hover:bg-white/10 hover:text-mascate-yellow border border-white/20"
+          {/* Área do usuário com Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            {/* Botão do usuário */}
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex items-center space-x-3 text-white hover:bg-white/10 rounded-lg px-3 py-2 transition-all duration-200"
             >
-              <LogOut className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">Sair</span>
-            </Button>
+              {/* Info do usuário */}
+              <div className="hidden sm:flex flex-col text-right">
+                <span className="font-medium text-sm">
+                  {user?.displayName || user?.username}
+                </span>
+              </div>
+
+              {/* Avatar do usuário */}
+              <div className="bg-mascate-yellow p-2 rounded-full text-xl">
+                {getAvatarIcon(user?.avatarId)}
+              </div>
+
+              {/* Ícone dropdown */}
+              <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {/* Dropdown Menu */}
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                <div className="px-4 py-2 border-b border-gray-100">
+                  <p className="font-medium text-gray-900">{user?.displayName || user?.username}</p>
+                  <p className="text-sm text-gray-500">{user?.email}</p>
+                </div>
+                
+                <Link
+                  to="/perfil"
+                  onClick={() => setIsDropdownOpen(false)}
+                  className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  <UserCircle className="h-4 w-4" />
+                  <span>Meu Perfil</span>
+                </Link>
+                
+                <Link
+                  to="/alterar-senha"
+                  onClick={() => setIsDropdownOpen(false)}
+                  className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  <Key className="h-4 w-4" />
+                  <span>Alterar Senha</span>
+                </Link>
+                
+                <div className="border-t border-gray-100 mt-1">
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center space-x-3 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors w-full text-left"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Sair</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

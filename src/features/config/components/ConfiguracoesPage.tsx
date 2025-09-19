@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/features/auth/context/AuthContext';
+import { showToast, showConfirmToast } from '@/components/ui/Toast';
 import { 
   Database, 
   Download, 
@@ -58,10 +59,10 @@ export const ConfiguracoesPage: React.FC = () => {
       // Em um sistema real, você salvaria no localStorage ou enviaria para API
       localStorage.setItem('mascate-business-config', JSON.stringify(businessConfig));
       
-      alert('Configurações de negócio salvas com sucesso!');
+      showToast.success('Configurações de negócio salvas com sucesso!');
     } catch (error) {
       console.error('Erro ao salvar configurações:', error);
-      alert('Erro ao salvar configurações. Tente novamente.');
+      showToast.error('Erro ao salvar configurações. Tente novamente.');
     } finally {
       setIsProcessing(false);
     }
@@ -99,10 +100,10 @@ export const ConfiguracoesPage: React.FC = () => {
         lastBackup: new Date().toISOString()
       }));
       
-      alert('Backup criado e baixado com sucesso!');
+      showToast.success('Backup criado e baixado com sucesso!');
     } catch (error) {
       console.error('Erro ao criar backup:', error);
-      alert('Erro ao criar backup. Tente novamente.');
+      showToast.error('Erro ao criar backup. Tente novamente.');
     } finally {
       setIsProcessing(false);
     }
@@ -120,10 +121,10 @@ export const ConfiguracoesPage: React.FC = () => {
       // Simular restauração
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      alert(`Backup restaurado com sucesso!\nData: ${new Date(backupData.timestamp).toLocaleString('pt-BR')}`);
+      showToast.success(`Backup restaurado com sucesso!\nData: ${new Date(backupData.timestamp).toLocaleString('pt-BR')}`);
     } catch (error) {
       console.error('Erro ao restaurar backup:', error);
-      alert('Erro ao restaurar backup. Verifique se o arquivo é válido.');
+      showToast.error('Erro ao restaurar backup. Verifique se o arquivo é válido.');
     } finally {
       setIsProcessing(false);
       event.target.value = '';
@@ -137,29 +138,32 @@ export const ConfiguracoesPage: React.FC = () => {
       
       // Simular exportação
       const filename = `mascate-relatorio-${new Date().toISOString().split('T')[0]}.${format}`;
-      alert(`Relatório exportado: ${filename}`);
+      showToast.success(`Relatório exportado: ${filename}`);
     } catch (error) {
       console.error('Erro ao exportar dados:', error);
-      alert('Erro ao exportar dados. Tente novamente.');
+      showToast.error('Erro ao exportar dados. Tente novamente.');
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleClearData = async (dataType: string) => {
-    const confirmed = window.confirm(
-      `⚠️ ATENÇÃO: Esta ação irá remover permanentemente todos os dados de ${dataType}.\n\nEsta ação NÃO pode ser desfeita!\n\nTem certeza que deseja continuar?`
-    );
+    const confirmed = await showConfirmToast({
+      message: `⚠️ ATENÇÃO: Esta ação irá remover permanentemente todos os dados de ${dataType}.\n\nEsta ação NÃO pode ser desfeita!\n\nTem certeza que deseja continuar?`,
+      confirmText: 'Sim, remover',
+      cancelText: 'Cancelar',
+      type: 'danger'
+    });
     
     if (!confirmed) return;
 
     setIsProcessing(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
-      alert(`Dados de ${dataType} removidos com sucesso.`);
+      showToast.success(`Dados de ${dataType} removidos com sucesso.`);
     } catch (error) {
       console.error('Erro ao limpar dados:', error);
-      alert('Erro ao limpar dados. Tente novamente.');
+      showToast.error('Erro ao limpar dados. Tente novamente.');
     } finally {
       setIsProcessing(false);
     }

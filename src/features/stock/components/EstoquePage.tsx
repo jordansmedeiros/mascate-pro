@@ -171,7 +171,7 @@ export const EstoquePage: React.FC = () => {
                       variant="primary"
                       size="sm"
                       disabled={!currentQty || currentQty <= 0 || currentQty > product.current_stock || updateStock.isPending}
-                      className="px-6"
+                      className="px-6 bg-mascate-green text-white hover:bg-green-700 border-mascate-green font-bold"
                     >
                       <Minus className="h-4 w-4 mr-2" />
                       VENDER

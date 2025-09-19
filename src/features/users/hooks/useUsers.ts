@@ -51,6 +51,8 @@ export const useUser = (id: string) => {
 interface CreateUserData {
   username: string;
   email: string;
+  displayName: string;
+  avatarId: string;
   role: 'user' | 'admin' | 'superadmin';
   active?: boolean;
 }

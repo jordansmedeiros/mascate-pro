@@ -1,17 +1,21 @@
 import React from 'react';
 import { 
-  Package, 
   AlertTriangle, 
-  TrendingUp, 
   DollarSign,
-  ShoppingCart,
-  Users as UsersIcon
+  Clock,
+  Zap,
+  TrendingDown,
+  Heart
 } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Card } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { useProducts, useLowStockProducts } from '@/features/products/hooks/useProducts';
-import { useAuth } from '@/features/auth/context/AuthContext';
+import { useProducts } from '@/features/products/hooks/useProducts';
+import { 
+  useStockAnalytics, 
+  formatCurrency, 
+  getCategoryEmoji
+} from '../hooks/useStockAnalytics';
 
 interface StatsCardProps {
   title: string;
@@ -46,180 +50,293 @@ const StatsCard: React.FC<StatsCardProps> = ({ title, value, icon: Icon, color, 
 };
 
 export const Dashboard: React.FC = () => {
-  const { user } = useAuth();
   const { data: products, isLoading: productsLoading } = useProducts();
-  const { data: lowStockProducts, isLoading: lowStockLoading } = useLowStockProducts();
+  const analytics = useStockAnalytics();
 
-  if (productsLoading || lowStockLoading) {
+  if (productsLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <LoadingSpinner text="Carregando dashboard..." />
+        <LoadingSpinner text="Analisando seu estoque..." />
       </div>
     );
   }
 
-  // Calculate stats
-  const totalProducts = products?.length || 0;
-  const lowStockCount = lowStockProducts?.length || 0;
-  
-  const totalPurchaseValue = products?.reduce((sum, product) => 
-    sum + (product.current_stock * product.purchase_price), 0) || 0;
-  
-  const totalSaleValue = products?.reduce((sum, product) => 
-    sum + (product.current_stock * product.sale_price), 0) || 0;
+  // Preparar dados para gráfico de categorias
+  const categoryChartData = analytics.categoryMetrics.map(metric => ({
+    name: getCategoryEmoji(metric.category) + ' ' + metric.category.charAt(0).toUpperCase() + metric.category.slice(1),
+    valor: metric.totalValue,
+    produtos: metric.totalProducts,
+    baixo: metric.lowStockCount
+  }));
 
-  const potentialProfit = totalSaleValue - totalPurchaseValue;
-
-  // Prepare chart data
-  const chartData = products?.map(product => ({
-    name: product.name.length > 10 ? `${product.name.substring(0, 10)}...` : product.name,
-    estoque: product.current_stock,
-    minimo: product.minimum_stock,
-    status: product.current_stock <= product.minimum_stock ? 'low' : 'ok'
-  })).slice(0, 8) || []; // Show top 8 products
+  // Dados para gráfico de pizza (distribuição de produtos por status)
+  const statusData = [
+    { name: 'Normal', value: products?.filter(p => p.current_stock > p.minimum_stock).length || 0, color: '#22c55e' },
+    { name: 'Atenção', value: analytics.needsAttention.length, color: '#f59e0b' },
+    { name: 'Crítico', value: products?.filter(p => p.current_stock === 0).length || 0, color: '#ef4444' }
+  ].filter(item => item.value > 0);
 
   return (
     <div className="space-y-6">
-      {/* Stats cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Indicadores Principais com Saúde do Estoque */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <StatsCard
-          title="Total de Produtos"
-          value={totalProducts}
-          icon={Package}
-          color="blue"
+          title="Saúde do Estoque"
+          value={`${analytics.healthScore}%`}
+          icon={Heart}
+          color={analytics.overallHealth === 'excelente' ? 'green' : 
+                 analytics.overallHealth === 'boa' ? 'blue' :
+                 analytics.overallHealth === 'atencao' ? 'yellow' : 'red'}
+          subtitle={analytics.overallHealth.charAt(0).toUpperCase() + analytics.overallHealth.slice(1)}
         />
-        
         <StatsCard
-          title="Estoque Baixo"
-          value={lowStockCount}
-          icon={AlertTriangle}
-          color="red"
-          subtitle={lowStockCount > 0 ? "Requer atenção!" : "Tudo ok!"}
-        />
-        
-        <StatsCard
-          title="Valor de Compra"
-          value={`R$ ${totalPurchaseValue.toFixed(2)}`}
-          icon={ShoppingCart}
-          color="green"
-        />
-        
-        <StatsCard
-          title="Valor de Venda"
-          value={`R$ ${totalSaleValue.toFixed(2)}`}
+          title="Valor Investido"
+          value={formatCurrency(analytics.totalValue)}
           icon={DollarSign}
+          color="green"
+          subtitle="Total do seu estoque"
+        />
+        
+        <StatsCard
+          title="Duração Média"
+          value={`${analytics.averageDaysToEmpty} dias`}
+          icon={Clock}
+          color="blue"
+          subtitle="Tempo para acabar"
+        />
+        
+        <StatsCard
+          title="Giro Rápido"
+          value={analytics.fastMovingCount}
+          icon={Zap}
           color="yellow"
-          subtitle={`Lucro: R$ ${potentialProfit.toFixed(2)}`}
+          subtitle="Produtos que vendem bem"
+        />
+        
+        <StatsCard
+          title="Giro Lento"
+          value={analytics.slowMovingCount}
+          icon={TrendingDown}
+          color="red"
+          subtitle="Produtos parados"
         />
       </div>
 
-      {/* Low stock alert */}
-      {lowStockCount > 0 && (
-        <Card className="border-red-200 bg-red-50">
-          <div className="flex items-start space-x-3">
-            <AlertTriangle className="h-6 w-6 text-red-600 mt-0.5" />
-            <div className="flex-1">
-              <h3 className="font-semibold text-red-900 mb-2">
-                ⚠️ Produtos com Estoque Baixo
-              </h3>
-              <div className="space-y-2">
-                {lowStockProducts?.slice(0, 5).map(product => (
-                  <div 
-                    key={product.id}
-                    className="flex justify-between items-center p-2 bg-white rounded border border-red-100"
+      {/* Status do Estoque - Gráfico */}
+      {statusData.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+          <Card title="🥧 Como está seu estoque?" subtitle="Situação geral dos produtos">
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={statusData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    dataKey="value"
+                    label={({ name, value, percent }) => `${name}: ${value} (${((percent as number) * 100).toFixed(0)}%)`}
+                    labelLine={false}
                   >
-                    <div>
-                      <span className="font-medium text-gray-900">{product.name}</span>
-                      <span className="text-sm text-gray-500 ml-2">({product.category})</span>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-bold text-red-600">{product.current_stock}</span>
-                      <span className="text-sm text-gray-500"> / {product.minimum_stock}</span>
-                    </div>
-                  </div>
-                ))}
-                {(lowStockCount > 5) && (
-                  <p className="text-sm text-red-600 font-medium">
-                    + {lowStockCount - 5} outros produtos precisam de reposição
-                  </p>
-                )}
-              </div>
+                    {statusData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => [`${value} produtos`, 'Quantidade']} />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
-          </div>
-        </Card>
+          </Card>
+        </div>
       )}
 
-      {/* Stock levels chart */}
-      <Card title="📊 Níveis de Estoque" subtitle="Visualização dos produtos e seus estoques">
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis 
-                dataKey="name" 
-                tick={{ fill: '#6B7280', fontSize: 12 }}
-                angle={-45}
-                textAnchor="end"
-                height={80}
-              />
-              <YAxis tick={{ fill: '#6B7280', fontSize: 12 }} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#FEF3C7', 
-                  border: '2px solid #F59E0B',
-                  borderRadius: '8px',
-                  color: '#92400E'
-                }}
-                formatter={(value, name) => [
-                  value, 
-                  name === 'estoque' ? 'Estoque Atual' : 'Estoque Mínimo'
-                ]}
-              />
-              <Bar 
-                dataKey="estoque" 
-                fill="#F59E0B" 
-                name="Estoque Atual" 
-                radius={[4, 4, 0, 0]}
-              />
-              <Bar 
-                dataKey="minimo" 
-                fill="#EF4444" 
-                name="Estoque Mínimo" 
-                radius={[4, 4, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </Card>
+      {/* Alertas Inteligentes */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Precisa de Atenção AGORA */}
+        {analytics.needsAttention.length > 0 && (
+          <Card className="border-red-300 bg-red-50">
+            <div className="text-center mb-4">
+              <div className="bg-red-500 p-3 rounded-full w-fit mx-auto mb-2">
+                <AlertTriangle className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="font-bold text-red-900">
+                Acabando AGORA!
+              </h3>
+              <p className="text-sm text-red-700">
+                {analytics.needsAttention.length} produto(s) crítico(s)
+              </p>
+            </div>
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {analytics.needsAttention.slice(0, 5).map(product => (
+                <div key={product.id} className="bg-white p-2 rounded border border-red-200">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium text-sm">{product.name}</span>
+                    <span className="text-red-600 font-bold text-sm">
+                      {product.current_stock} restante(s)
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
 
-      {/* Quick actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <div className="text-center py-8">
-            <Package className="h-12 w-12 text-mascate-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Gerenciar Produtos</h3>
-            <p className="text-gray-600 mb-4">Adicionar, editar ou remover produtos do estoque</p>
-          </div>
-        </Card>
+        {/* Comprar em Breve */}
+        {analytics.buyingSoon.length > 0 && (
+          <Card className="border-yellow-300 bg-yellow-50">
+            <div className="text-center mb-4">
+              <div className="bg-yellow-500 p-3 rounded-full w-fit mx-auto mb-2">
+                <Clock className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="font-bold text-yellow-900">
+                Comprar em Breve
+              </h3>
+              <p className="text-sm text-yellow-700">
+                {analytics.buyingSoon.length} produto(s) para planejar
+              </p>
+            </div>
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {analytics.buyingSoon.slice(0, 5).map(product => (
+                <div key={product.id} className="bg-white p-2 rounded border border-yellow-200">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium text-sm">{product.name}</span>
+                    <span className="text-yellow-600 font-bold text-sm">
+                      {Math.round((product.current_stock / product.minimum_stock) * 7)} dias
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
 
-        <Card>
-          <div className="text-center py-8">
-            <TrendingUp className="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Movimentações</h3>
-            <p className="text-gray-600 mb-4">Registrar vendas, entradas e ajustes de estoque</p>
-          </div>
-        </Card>
-
-        {user?.role === 'superadmin' && (
-          <Card>
-            <div className="text-center py-8">
-              <UsersIcon className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Usuários</h3>
-              <p className="text-gray-600 mb-4">Gerenciar usuários e permissões do sistema</p>
+        {/* Produtos Parados */}
+        {analytics.overstocked.length > 0 && (
+          <Card className="border-blue-300 bg-blue-50">
+            <div className="text-center mb-4">
+              <div className="bg-blue-500 p-3 rounded-full w-fit mx-auto mb-2">
+                <TrendingDown className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="font-bold text-blue-900">
+                Estoque Alto
+              </h3>
+              <p className="text-sm text-blue-700">
+                {analytics.overstocked.length} produto(s) acumulados
+              </p>
+            </div>
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {analytics.overstocked.slice(0, 5).map(product => (
+                <div key={product.id} className="bg-white p-2 rounded border border-blue-200">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium text-sm">{product.name}</span>
+                    <span className="text-blue-600 font-bold text-sm">
+                      {product.current_stock} unidades
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </Card>
         )}
       </div>
+
+      {/* Gráfico de Valor por Categoria */}
+      {categoryChartData.length > 0 && (
+        <Card title="💰 Onde está seu dinheiro?" subtitle="Valor investido por categoria">
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={categoryChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis 
+                  dataKey="name" 
+                  tick={{ fill: '#6B7280', fontSize: 11 }}
+                />
+                <YAxis 
+                  tick={{ fill: '#6B7280', fontSize: 11 }}
+                  tickFormatter={(value) => `R$ ${value}`}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#0a3522', 
+                    border: '2px solid #0a3522',
+                    borderRadius: '8px',
+                    color: 'white'
+                  }}
+                  formatter={(value) => [formatCurrency(Number(value)), 'Valor Investido']}
+                />
+                <Bar 
+                  dataKey="valor" 
+                  fill="#0a3522" 
+                  name="Valor" 
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      )}
+
+      {/* Resumo por Categoria */}
+      {analytics.categoryMetrics.length > 0 && (
+        <Card title="📊 Resumo por Categoria" subtitle="Visão detalhada do seu estoque">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {analytics.categoryMetrics.map(metric => (
+              <div key={metric.category} className="bg-gray-50 rounded-lg p-4">
+                <div className="text-center mb-3">
+                  <div className="text-2xl mb-2">{getCategoryEmoji(metric.category)}</div>
+                  <h4 className="font-semibold text-gray-900 capitalize">
+                    {metric.category}
+                  </h4>
+                </div>
+                
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Produtos:</span>
+                    <span className="font-medium">{metric.totalProducts}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Valor:</span>
+                    <span className="font-medium text-green-600">
+                      {formatCurrency(metric.totalValue)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Média:</span>
+                    <span className="font-medium">{metric.averageStock} un</span>
+                  </div>
+                  {metric.lowStockCount > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-red-600">⚠️ Baixo:</span>
+                      <span className="font-bold text-red-600">{metric.lowStockCount}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* Dicas Rápidas */}
+      <Card className="bg-gradient-to-r from-mascate-green to-green-600 text-white">
+        <div className="text-center py-6">
+          <h3 className="text-xl font-bold mb-4">💡 Dicas para Otimizar seu Estoque</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div className="bg-white bg-opacity-20 rounded-lg p-4">
+              <h4 className="font-semibold mb-2">🎯 Foque no Giro Rápido</h4>
+              <p>Produtos que vendem bem merecem atenção especial. Mantenha sempre em estoque!</p>
+            </div>
+            <div className="bg-white bg-opacity-20 rounded-lg p-4">
+              <h4 className="font-semibold mb-2">⏰ Antecipe-se</h4>
+              <p>Use o "Comprar em Breve" para planejar suas compras e evitar faltas.</p>
+            </div>
+            <div className="bg-white bg-opacity-20 rounded-lg p-4">
+              <h4 className="font-semibold mb-2">💰 Monitore o Valor</h4>
+              <p>Acompanhe onde está seu dinheiro investido para tomar decisões inteligentes.</p>
+            </div>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 };

@@ -6,7 +6,9 @@ export const userRoleSchema = z.enum(['superadmin', 'admin', 'user']);
 export const userSchema = z.object({
   id: z.string().uuid(),
   username: z.string().min(3).max(50),
-  email: z.string().email().optional(),
+  email: z.string().email(),
+  displayName: z.string().min(1).max(100),
+  avatarId: z.string().optional(),
   role: userRoleSchema,
   active: z.boolean(),
   created_at: z.string().datetime(),

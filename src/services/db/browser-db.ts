@@ -31,6 +31,7 @@ export interface DatabaseService {
 class BrowserDatabaseService implements DatabaseService {
   private dbName = 'mascate_stock_v2';
   private initialized = false;
+  private currentVersion = 2; // Incremented for displayName and avatarId
 
   async init(): Promise<void> {
     if (this.initialized) return;
@@ -44,6 +45,8 @@ class BrowserDatabaseService implements DatabaseService {
         await this.seedInitialData();
       } else {
         console.log('✅ Database found with existing data');
+        // Check if migration is needed
+        await this.migrateDataIfNeeded();
       }
       
       this.initialized = true;
@@ -64,6 +67,42 @@ class BrowserDatabaseService implements DatabaseService {
     return users !== null;
   }
 
+  private async migrateDataIfNeeded(): Promise<void> {
+    const version = localStorage.getItem(this.getKey('version'));
+    const currentVersion = version ? parseInt(version) : 1;
+    
+    if (currentVersion < this.currentVersion) {
+      console.log(`🔄 Migrating database from version ${currentVersion} to ${this.currentVersion}...`);
+      
+      if (currentVersion < 2) {
+        await this.migrateToV2();
+      }
+      
+      localStorage.setItem(this.getKey('version'), this.currentVersion.toString());
+      console.log('✅ Database migration completed');
+    }
+  }
+
+  private async migrateToV2(): Promise<void> {
+    // Add displayName and avatarId to existing users
+    const users = await this.loadFromStorage<any>('users');
+    const migratedUsers = users.map((user: any) => {
+      if (!user.displayName) {
+        user.displayName = user.username === 'admin' ? 'Administrador' : user.username;
+      }
+      if (!user.avatarId) {
+        user.avatarId = 'admin-male-1'; // Default avatar
+      }
+      if (!user.email) {
+        user.email = user.username === 'admin' ? 'admin@mascate.com' : `${user.username}@mascate.com`;
+      }
+      return user;
+    });
+    
+    await this.saveToStorage('users', migratedUsers);
+    console.log('✅ Migrated users to v2 (added displayName, avatarId, email)');
+  }
+
   private getKey(table: string): string {
     return `${this.dbName}_${table}`;
   }
@@ -73,7 +112,9 @@ class BrowserDatabaseService implements DatabaseService {
     const adminUser: User = {
       id: uuidv4(),
       username: 'admin',
-      email: 'admin@mascate.local',
+      email: 'admin@mascate.com',
+      displayName: 'Administrador',
+      avatarId: 'admin-male-1',
       role: 'superadmin',
       active: true,
       created_at: new Date().toISOString(),
