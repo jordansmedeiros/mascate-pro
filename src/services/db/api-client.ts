@@ -38,8 +38,13 @@ class ApiDatabaseService implements DatabaseService {
     // Usar variável de ambiente ou detectar automaticamente
     this.baseUrl = import.meta.env.VITE_API_URL ||
       (import.meta.env.PROD
-        ? 'https://mascate-pro.vercel.app/api'  // URL de produção
-        : 'http://localhost:3000/api');        // URL de desenvolvimento
+        ? 'https://mascate.sinesys.app/api'    // URL de produção
+        : this.detectDevPort());               // Detectar porta de desenvolvimento
+  }
+
+  private detectDevPort(): string {
+    // Em desenvolvimento, usar o servidor Express na porta 3001
+    return 'http://localhost:3001/api';
   }
 
   async init(): Promise<void> {

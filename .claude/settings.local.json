@@ -7,7 +7,13 @@
       "Bash(npm run dev:*)",
       "Bash(node:*)",
       "Bash(npm install:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(vercel dev:*)",
+      "Bash(curl:*)",
+      "Bash(echo:*)",
+      "Bash(npm run server:*)",
+      "Bash(VITE_API_URL=http://localhost:3001/api npm run dev)",
+      "Bash(netstat:*)"
     ],
     "deny": [],
     "ask": []

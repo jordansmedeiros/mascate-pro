@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 async function testAuth() {
-  const baseUrl = 'http://localhost:3000/api';
+  const baseUrl = 'http://localhost:3001/api';
 
   console.log('🔄 Testando autenticação...');
 
@@ -19,8 +19,18 @@ async function testAuth() {
       }),
     });
 
-    const result1 = await response1.json();
     console.log(`   Status: ${response1.status}`);
+
+    const responseText = await response1.text();
+    console.log(`   Raw response: ${responseText.substring(0, 200)}...`);
+
+    let result1;
+    try {
+      result1 = JSON.parse(responseText);
+    } catch (e) {
+      console.log(`   ❌ JSON Parse Error: ${e.message}`);
+      return;
+    }
     console.log(`   Success: ${result1.success}`);
 
     if (result1.success) {
@@ -73,7 +83,7 @@ async function testAuth() {
     console.error('\n❌ Erro no teste:', error.message);
     console.log('\n💡 Verifique se:');
     console.log('   - O servidor está rodando (npm run dev)');
-    console.log('   - A API está acessível em http://localhost:3000/api');
+    console.log('   - A API está acessível em http://localhost:3001/api');
     console.log('   - As Vercel Functions estão funcionando');
   }
 }

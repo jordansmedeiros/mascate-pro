@@ -76,6 +76,8 @@ cp .env.example .env
 # Edite o arquivo .env com suas configurações
 
 # Execute em modo desenvolvimento
+Para usar Supabase/PostgreSQL, configure as variáveis no `.env` conforme instruções em `/docs/POSTGRESQL_API_IMPLEMENTATION.md`.
+npm run init-db
 npm run dev
 ```
 
@@ -102,19 +104,22 @@ VITE_DB_NAME=mascate_stock.db
 
 ```bash
 # Desenvolvimento
-npm run dev          # Inicia servidor de desenvolvimento
-npm run build        # Build para produção
-npm run preview      # Preview do build
+npm run dev           # Inicia servidor de desenvolvimento
+npm run build         # Build para produção
+npm run preview       # Preview do build
+
+# Banco de dados
+npm run init-db       # Gera banco SQLite inicial (dev)
 
 # Qualidade de código
-npm run lint         # Executa ESLint
-npm run lint:fix     # Corrige problemas automaticamente
-npm run format       # Formata código com Prettier
-npm run typecheck    # Verifica tipos TypeScript
+npm run lint          # Executa ESLint
+npm run lint:fix      # Corrige problemas automaticamente
+npm run format        # Formata código com Prettier
+npm run typecheck     # Verifica tipos TypeScript
 
 # Testes
-npm run test         # Executa testes
-npm run test:ui      # Interface gráfica dos testes
+npm run test          # Executa testes
+npm run test:ui       # Interface gráfica dos testes
 npm run test:coverage # Relatório de cobertura
 ```
 
@@ -208,10 +213,15 @@ O sistema **JÁ FUNCIONA** para o propósito principal:
 
 ### 🕰️ Melhorias Futuras (Se Necessário)
 
-- [ ] Integração com Supabase (para backup na nuvem)
-- [ ] PWA (instalar no celular)
-- [ ] Relatórios de vendas
-- [ ] Backup/restauração de dados
+- [ ] Integração completa com Supabase/PostgreSQL (backup e dados compartilhados)
+- [ ] PWA (instalar no celular, suporte offline)
+- [ ] Relatórios de vendas e exportação de dados
+- [ ] Backup/restauração de dados (export/import nativo)
+- [ ] Testes automatizados e cobertura
+- [ ] Service Worker para cache offline
+- [ ] Migração automática do localStorage para SQLite/Supabase
+
+Consulte `/docs/IMPLEMENTATION_STATUS.md` e `/docs/POSTGRESQL_API_IMPLEMENTATION.md` para detalhes técnicos e status das integrações.
 
 ## 🧪 Migração do MVP Anterior
 
@@ -229,7 +239,9 @@ Para migrar dados do sistema anterior:
    console.log('Backup:', JSON.stringify(backup, null, 2));
    ```
 
-2. **Os dados serão migrados automaticamente** para a nova estrutura SQLite
+2. **Os dados serão migrados automaticamente** para a nova estrutura SQLite ou Supabase, conforme configuração.
+
+Consulte `/docs/SQLITE_IMPLEMENTATION.md` e `/docs/POSTGRESQL_API_IMPLEMENTATION.md` para detalhes e scripts de migração.
 
 ## 🎨 Design System
 
@@ -293,4 +305,4 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para de
 Para suporte técnico ou dúvidas sobre implementação:
 
 - 🐛 Issues: GitHub Issues
-- 📖 Docs: `/docs` para documentação técnica detalhada
+- 📖 Documentação técnica: consulte a pasta `/docs` para detalhes de arquitetura, migração, padrões e integrações.
