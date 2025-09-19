@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 async function testAuth() {
-  const baseUrl = 'http://localhost:3001/api';
+  const baseUrl = 'http://localhost:3002/api';
 
   console.log('🔄 Testando autenticação...');
 
