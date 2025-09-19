@@ -19,7 +19,8 @@
       "Bash(npm run lint)",
       "Bash(git rm:*)",
       "Bash(git add:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(NODE_ENV=production node server.js)"
     ],
     "deny": [],
     "ask": []
