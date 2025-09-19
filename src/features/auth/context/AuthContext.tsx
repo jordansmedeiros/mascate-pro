@@ -76,52 +76,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
       const db = await getDatabase();
       
-      // For now, we'll use simple email/password until Supabase is integrated
-      // In the MVP, password was stored in plain text, so we'll match that for migration
-      const users = await db.getUsers();
-      const foundUser = users.find(u => 
-        u.email === email && 
-        u.active
-      );
-      
-      if (!foundUser) {
-        return { success: false, error: 'Usuário não encontrado ou inativo' };
+      // Use the new authentication endpoint with proper password hashing
+      const result = await db.login(email, password);
+
+      if (result.success && result.user) {
+        // Save to localStorage and state
+        localStorage.setItem('mascate_current_user', JSON.stringify(result.user));
+        setUser(result.user);
+        setIsAuthenticated(true);
+      } else {
+        return { success: false, error: result.error || 'Credenciais inválidas' };
       }
-      
-      // Simple password check - in production this would be hashed
-      // For the admin user created by seeding, we'll accept "admin" as password
-      const isValidPassword = (email === 'admin@mascate.com' && password === 'admin') || 
-                             (email === foundUser.email);
-      
-      if (!isValidPassword) {
-        await db.createActivityLog({
-          user_id: foundUser.id,
-          action: 'LOGIN_FAILED',
-          details: `Tentativa de login falhada para email ${email}`,
-          ip_address: '127.0.0.1',
-          user_agent: navigator.userAgent,
-        });
-        
-        return { success: false, error: 'Credenciais inválidas' };
-      }
-      
-      // Update last login
-      const updatedUser = await db.updateUser(foundUser.id, {
-        last_login: new Date().toISOString(),
-      });
-      
-      // Log successful login
-      await db.createActivityLog({
-        user_id: updatedUser.id,
-        action: 'LOGIN_SUCCESS',
-        details: `Login realizado com sucesso para usuário ${updatedUser.displayName} (${updatedUser.email})`,
-        ip_address: '127.0.0.1',
-        user_agent: navigator.userAgent,
-      });
-      
-      // Save to localStorage and state
-      localStorage.setItem('mascate_current_user', JSON.stringify(updatedUser));
-      setUser(updatedUser);
       
       return { success: true };
     } catch (error) {

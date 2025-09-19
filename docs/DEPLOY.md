@@ -93,19 +93,27 @@ Configure as seguintes variáveis no Vercel Dashboard:
 
 ### Produção
 ```env
+POSTGRES_USER=your_postgres_user
+POSTGRES_PASSWORD=your_postgres_password
+POSTGRES_HOST=your_postgres_host
+POSTGRES_PORT=your_postgres_port
+POSTGRES_DB=your_postgres_database
+
 VITE_APP_NAME="Mascate Runeria"
 VITE_APP_VERSION="1.0.0"
 VITE_NODE_ENV="production"
-VITE_USE_LOCAL_DB="true"
-VITE_DB_NAME="mascate_stock.db"
 ```
 
 ### Preview (Opcional)
 ```env
+POSTGRES_USER=your_postgres_user
+POSTGRES_PASSWORD=your_postgres_password
+POSTGRES_HOST=your_postgres_host
+POSTGRES_PORT=your_postgres_port
+POSTGRES_DB=your_postgres_database
+
 VITE_APP_NAME="Mascate Runeria (Preview)"
 VITE_NODE_ENV="development"
-VITE_USE_LOCAL_DB="true"
-VITE_DB_NAME="mascate_stock.db"
 ```
 
 ## 5. Configurações Avançadas
@@ -217,7 +225,7 @@ echo "node_modules/" >> .gitignore
 
 **Problema**: Variáveis não funcionam
 **Solução**: 
-1. Certifique-se de que começam com `VITE_`
+1. Certifique-se de que começam com `VITE_` para o frontend e sem prefixo para o backend
 2. Verifique se estão definidas no Vercel Dashboard
 3. Redeploy após adicionar/modificar
 
@@ -251,7 +259,6 @@ echo "node_modules/" >> .gitignore
 ### Boas Práticas
 
 - ✅ Não exposição de chaves secretas
-- ✅ Banco de dados local (SQLite)
 - ✅ Validação de entrada
 - ✅ Sanitização de dados
 

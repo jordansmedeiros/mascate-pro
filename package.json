@@ -36,7 +36,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,json,css,md}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,json,css,md}\"",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist node_modules/.vite",
+    "clean": "rimraf dist node_modules/.vite",
     "prepare": "husky install",
     "health-check": "npm run typecheck && npm run lint && npm run build"
   },
@@ -91,6 +91,7 @@
     "lint-staged": "^16.1.6",
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
+    "rimraf": "^6.0.1",
     "terser": "^5.44.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.43.0",

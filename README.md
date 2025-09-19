@@ -24,7 +24,6 @@ Uma aplicação **super simples e rápida** para controle dos pequenos itens ven
 
 - **Dashboard**: Visão geral do estoque
 - **Autenticação**: Login simples (admin/admin para desenvolvimento)
-- **Persistência local**: Tudo salvo no browser (SQLite)
 - **Responsivo**: Funciona no celular e computador
 
 ## 🛠️ Tech Stack
@@ -43,7 +42,9 @@ Uma aplicação **super simples e rápida** para controle dos pequenos itens ven
 
 ### Backend & Database
 
-- **PostgreSQL** - Database principal via Supabase
+- **Express.js** - Servidor de desenvolvimento local
+- **PostgreSQL** - Database principal
+- **Vercel** - Plataforma de deployment com Serverless Functions
 
 ### Desenvolvimento
 
@@ -59,7 +60,7 @@ Uma aplicação **super simples e rápida** para controle dos pequenos itens ven
 
 - Node.js 18+
 - npm ou pnpm
-- Conta no Supabase (opcional para desenvolvimento)
+- Conexão com banco de dados PostgreSQL
 
 ### Instalação
 
@@ -73,12 +74,10 @@ npm install
 
 # Configure as variáveis de ambiente
 cp .env.example .env
-# Edite o arquivo .env com suas configurações
+# Edite o arquivo .env com suas configurações do PostgreSQL
 
-# Execute em modo desenvolvimento
-Para usar Supabase/PostgreSQL, configure as variáveis no `.env` conforme instruções em `/docs/POSTGRESQL_API_IMPLEMENTATION.md`.
-npm run init-db
-npm run dev
+# Execute em modo desenvolvimento (Frontend + Backend)
+npm run dev:full
 ```
 
 ### Configuração do Ambiente
@@ -86,30 +85,29 @@ npm run dev
 Crie um arquivo `.env` baseado no `.env.example`:
 
 ```env
-# Supabase Configuration (opcional para dev)
-VITE_SUPABASE_URL=your_supabase_url_here
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+# PostgreSQL Configuration
+POSTGRES_USER=your_postgres_user
+POSTGRES_PASSWORD=your_postgres_password
+POSTGRES_HOST=your_postgres_host
+POSTGRES_PORT=your_postgres_port
+POSTGRES_DB=your_postgres_database
 
 # Application Settings
 VITE_APP_NAME="Mascate Runeria"
 VITE_APP_VERSION=1.0.0
 VITE_NODE_ENV=development
-
-# Database Settings
-VITE_USE_LOCAL_DB=true
-VITE_DB_NAME=mascate_stock.db
 ```
 
 ## 📖 Scripts Disponíveis
 
 ```bash
 # Desenvolvimento
-npm run dev           # Inicia servidor de desenvolvimento
-npm run build         # Build para produção
-npm run preview       # Preview do build
+npm run dev           # Inicia o servidor de desenvolvimento do Vite
+npm run dev:full      # Inicia o servidor do Vite e o servidor Express
+npm run server        # Inicia o servidor Express com nodemon
 
-# Banco de dados
-npm run init-db       # Gera banco SQLite inicial (dev)
+# Build
+npm run build         # Build para produção
 
 # Qualidade de código
 npm run lint          # Executa ESLint
@@ -141,12 +139,16 @@ src/
 │   ├── ui/           # Componentes base (Button, Card, etc.)
 │   └── layout/       # Componentes de layout
 ├── services/         # Serviços e integrações
-│   ├── db/           # Database service (SQLite)
-│   └── api/          # API calls (Supabase)
-├── hooks/            # Custom hooks
 ├── types/            # Definições de tipos TypeScript
 ├── utils/            # Utilitários gerais
 └── test/             # Configuração de testes
+
+api/                  # Vercel Serverless Functions
+├── auth.ts           # Autenticação
+├── db.ts             # Conexão com o banco de dados
+├── products.ts       # CRUD de produtos
+├── stock-movements.ts# Movimentação de estoque
+└── users.ts          # CRUD de usuários
 ```
 
 ## 🔐 Sistema de Autenticação
@@ -162,7 +164,6 @@ src/
 - **Usuário**: `admin`
 - **Senha**: `admin`
 - **Acesso**: Superadmin (acesso total)
-- **Database**: SQLite local (localStorage) com produtos de exemplo
 
 ## 📊 Funcionalidades Principais
 
@@ -190,96 +191,9 @@ src/
   - 🔄 **Devolução** - Retorno de produtos
   - ⚠️ **Perda** - Produtos danificados/perdidos
 
-## 📋 Status do Desenvolvimento
+## 部署 (Deployment)
 
-### ✅ **FUNCIONANDO** (Pronto para Usar!)
-
-- [x] **💰 VENDAS RÁPIDAS** - Funcionalidade principal 100% funcional!
-- [x] **📦 Cadastro de Produtos** - CRUD completo e simples
-- [x] **📈 Dashboard** - Visão geral do estoque
-- [x] **🔐 Login** - Autenticação básica funcionando
-- [x] **💾 Database Local** - SQLite no browser com persistência
-- [x] **📱 Responsivo** - Interface mobile-friendly
-- [x] **⚡ Performance** - React Query + cache inteligente
-
-### 🎯 **O Essencial Está Pronto!**
-
-O sistema **JÁ FUNCIONA** para o propósito principal:
-
-1. **Cadastrar produtos** do caixa
-2. **Dar baixa rápida** quando alguém compra
-3. **Ver estoque atual** e alertas de produto acabando
-4. **Repor estoque** quando comprar mais produtos
-
-### 🕰️ Melhorias Futuras (Se Necessário)
-
-- [ ] Integração completa com Supabase/PostgreSQL (backup e dados compartilhados)
-- [ ] PWA (instalar no celular, suporte offline)
-- [ ] Relatórios de vendas e exportação de dados
-- [ ] Backup/restauração de dados (export/import nativo)
-- [ ] Testes automatizados e cobertura
-- [ ] Service Worker para cache offline
-- [ ] Migração automática do localStorage para SQLite/Supabase
-
-Consulte `/docs/IMPLEMENTATION_STATUS.md` e `/docs/POSTGRESQL_API_IMPLEMENTATION.md` para detalhes técnicos e status das integrações.
-
-## 🧪 Migração do MVP Anterior
-
-Para migrar dados do sistema anterior:
-
-1. **Backup dos dados existentes**:
-
-   ```javascript
-   // No console do browser do sistema anterior
-   const backup = {
-     usuarios: JSON.parse(localStorage.getItem('mascate_usuarios')),
-     produtos: JSON.parse(localStorage.getItem('mascate_produtos')),
-     logs: JSON.parse(localStorage.getItem('mascate_logs'))
-   };
-   console.log('Backup:', JSON.stringify(backup, null, 2));
-   ```
-
-2. **Os dados serão migrados automaticamente** para a nova estrutura SQLite ou Supabase, conforme configuração.
-
-Consulte `/docs/SQLITE_IMPLEMENTATION.md` e `/docs/POSTGRESQL_API_IMPLEMENTATION.md` para detalhes e scripts de migração.
-
-## 🎨 Design System
-
-### Cores Principais
-
-```css
-/* Mascate Gold */
---mascate-500: #f1c535
---mascate-600: #e2a928
-
-/* Nightclub Purple */
---nightclub-500: #d946ef
---nightclub-600: #c026d3
-```
-
-### Classes Utilitárias Customizadas
-
-```typescript
-// Botões
-<button className="btn-primary">Ação Principal</button>
-<button className="btn-secondary">Ação Secundária</button>
-<button className="btn-danger">Ação Perigosa</button>
-
-// Cards
-<div className="card">
-  <h3 className="card-header">Título</h3>
-  <p>Conteúdo...</p>
-</div>
-
-// Formulários
-<input className="form-input" />
-<label className="form-label">Label</label>
-
-// Alertas
-<div className="alert-warning">Aviso</div>
-<div className="alert-success">Sucesso</div>
-<div className="alert-danger">Erro</div>
-```
+O projeto é deployado na Vercel. As Serverless Functions na pasta `api` são usadas para se comunicar com o banco de dados PostgreSQL.
 
 ## 🤝 Contributing
 
@@ -298,7 +212,7 @@ Consulte `/docs/SQLITE_IMPLEMENTATION.md` e `/docs/POSTGRESQL_API_IMPLEMENTATION
 
 ## 📄 License
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para detalhes.
+Este projeto está sob a licença MIT.
 
 ## 🆘 Suporte
 

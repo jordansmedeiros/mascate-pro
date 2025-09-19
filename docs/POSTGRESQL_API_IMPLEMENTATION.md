@@ -34,8 +34,6 @@ api/
 src/services/db/
 ├── api-client.ts         # Cliente HTTP para API
 ├── index.ts              # Entry point (usa API)
-├── sqlite-db.ts          # SQLite (mantido para referência)
-└── postgresql-db.ts      # PostgreSQL (mantido para referência)
 ```
 
 ### **3. Banco PostgreSQL**
@@ -110,7 +108,6 @@ npm run build            # Build para produção
 npm run deploy:vercel    # Deploy na Vercel
 
 # Banco de Dados
-npm run init-db          # Não necessário (já configurado)
 node scripts/setup-postgresql.js  # Recriar schema se necessário
 ```
 

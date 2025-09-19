@@ -10,19 +10,12 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  optimizeDeps: {
-    exclude: ['sql.js'],
-  },
   server: {
     fs: {
       // Allow serving files from one level up to the project root
       allow: ['..'],
     },
   },
-  worker: {
-    format: 'es',
-  },
-  assetsInclude: ['**/*.wasm'],
   build: {
     // Otimizações para produção
     target: 'es2015',
