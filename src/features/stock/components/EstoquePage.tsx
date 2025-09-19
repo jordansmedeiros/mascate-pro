@@ -29,7 +29,14 @@ export const EstoquePage: React.FC = () => {
   
   const lowStockProducts = filteredProducts.filter(p => p.current_stock <= p.minimum_stock);
 
-  const handleQuickSale = async (product: Product, qty = 1) => {
+
+  const handleSale = async (product: Product) => {
+    const qty = quantities[product.id] || 0;
+    if (qty <= 0) {
+      alert('Digite uma quantidade válida!');
+      return;
+    }
+    
     if (product.current_stock < qty) {
       alert(`Estoque insuficiente! Disponível: ${product.current_stock}`);
       return;
@@ -51,16 +58,6 @@ export const EstoquePage: React.FC = () => {
     }
   };
 
-  const handleCustomSale = async (product: Product) => {
-    const qty = quantities[product.id] || 0;
-    if (qty <= 0) {
-      alert('Digite uma quantidade válida!');
-      return;
-    }
-    
-    await handleQuickSale(product, qty);
-  };
-
   const setQuantity = (productId: string, value: string) => {
     const numValue = parseInt(value) || 0;
     setQuantities(prev => ({ ...prev, [productId]: numValue }));
@@ -76,29 +73,17 @@ export const EstoquePage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header com busca */}
-      <div className="space-y-4">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-mascate-900 mb-2">
-            💰 VENDAS
-          </h1>
-          <p className="text-mascate-600">
-            Sistema de controle de saídas - Registre suas vendas rapidamente
-          </p>
-        </div>
-        
-        {/* Barra de busca */}
-        <div className="max-w-md mx-auto relative">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Buscar produtos por nome ou categoria..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4"
-            />
-          </div>
+      {/* Barra de busca */}
+      <div className="flex items-center justify-start">
+        <div className="relative w-full max-w-md">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="Buscar produtos por nome ou categoria..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 pr-4"
+          />
         </div>
       </div>
 
@@ -169,66 +154,28 @@ export const EstoquePage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Ações de Venda */}
+                {/* Ação de Venda */}
                 {product.current_stock > 0 ? (
-                  <div className="flex items-center space-x-2">
-                    {/* Botões de Venda Rápida */}
-                    <div className="flex space-x-1">
-                      <Button
-                        onClick={() => handleQuickSale(product, 1)}
-                        variant="primary"
-                        size="sm"
-                        className="bg-green-600 hover:bg-green-700 px-3"
-                        disabled={product.current_stock < 1 || updateStock.isPending}
-                      >
-                        -1
-                      </Button>
-                      {product.current_stock >= 2 && (
-                        <Button
-                          onClick={() => handleQuickSale(product, 2)}
-                          variant="primary"
-                          size="sm"
-                          className="bg-green-600 hover:bg-green-700 px-3"
-                          disabled={product.current_stock < 2 || updateStock.isPending}
-                        >
-                          -2
-                        </Button>
-                      )}
-                      {product.current_stock >= 5 && (
-                        <Button
-                          onClick={() => handleQuickSale(product, 5)}
-                          variant="primary"
-                          size="sm"
-                          className="bg-green-600 hover:bg-green-700 px-3"
-                          disabled={product.current_stock < 5 || updateStock.isPending}
-                        >
-                          -5
-                        </Button>
-                      )}
-                    </div>
-
-                    {/* Quantidade Personalizada */}
-                    <div className="flex items-center space-x-2">
-                      <Input
-                        type="number"
-                        placeholder="Qtd"
-                        value={currentQty || ''}
-                        onChange={(e) => setQuantity(product.id, e.target.value)}
-                        className="text-center w-20"
-                        min="1"
-                        max={product.current_stock.toString()}
-                      />
-                      <Button
-                        onClick={() => handleCustomSale(product)}
-                        variant="danger"
-                        size="sm"
-                        disabled={!currentQty || currentQty <= 0 || currentQty > product.current_stock || updateStock.isPending}
-                        className="px-4"
-                      >
-                        <Minus className="h-4 w-4 mr-1" />
-                        VENDER
-                      </Button>
-                    </div>
+                  <div className="flex items-center space-x-3">
+                    <Input
+                      type="number"
+                      placeholder="Quantidade"
+                      value={currentQty || ''}
+                      onChange={(e) => setQuantity(product.id, e.target.value)}
+                      className="text-center w-24"
+                      min="1"
+                      max={product.current_stock.toString()}
+                    />
+                    <Button
+                      onClick={() => handleSale(product)}
+                      variant="primary"
+                      size="sm"
+                      disabled={!currentQty || currentQty <= 0 || currentQty > product.current_stock || updateStock.isPending}
+                      className="px-6"
+                    >
+                      <Minus className="h-4 w-4 mr-2" />
+                      VENDER
+                    </Button>
                   </div>
                 ) : (
                   /* Produto Esgotado */

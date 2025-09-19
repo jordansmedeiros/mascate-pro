@@ -7,6 +7,8 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Dashboard } from '@/features/dashboard/components/Dashboard';
 import { ProdutosPage } from '@/features/products/components/ProdutosPage';
 import { EstoquePage } from '@/features/stock/components/EstoquePage';
+import { UsersPage } from '@/features/users/components/UsersPage';
+import { LogsPage } from '@/features/logs/components/LogsPage';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Protected Route wrapper
@@ -138,7 +140,7 @@ const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute requiredRole="superadmin">
             <AppLayout>
-              <ComingSoon title="👥 Gestão de Usuários" />
+              <UsersPage />
             </AppLayout>
           </ProtectedRoute>
         }
@@ -149,7 +151,7 @@ const AppRoutes: React.FC = () => {
         element={
           <ProtectedRoute requiredRole="admin">
             <AppLayout>
-              <ComingSoon title="📋 Logs de Atividade" />
+              <LogsPage />
             </AppLayout>
           </ProtectedRoute>
         }

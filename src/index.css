@@ -5,14 +5,22 @@
 /* Custom styles for Mascate Runeria */
 @layer base {
   body {
-    @apply font-sans antialiased;
+    @apply font-sans antialiased bg-mascate-bg;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-mascate-green;
+  }
+  
+  .mascate-title {
+    @apply text-mascate-green font-bold;
   }
 }
 
 @layer components {
   /* Button variants */
   .btn-primary {
-    @apply bg-gradient-to-r from-mascate-500 to-mascate-600 text-white font-semibold py-2 px-4 rounded-lg hover:from-mascate-600 hover:to-mascate-700 transition-all duration-300 shadow-lg;
+    @apply bg-mascate-yellow text-mascate-green font-semibold py-2 px-4 rounded-lg hover:bg-mascate-500 hover:text-white transition-all duration-300 shadow-lg;
   }
   
   .btn-secondary {
@@ -25,20 +33,20 @@
   
   /* Card styles */
   .card {
-    @apply bg-white rounded-xl shadow-lg border border-gray-100 p-4;
+    @apply bg-white rounded-xl shadow-lg border border-mascate-yellow/20 p-4;
   }
   
   .card-header {
-    @apply text-lg font-bold text-mascate-900 mb-3;
+    @apply text-lg font-bold text-mascate-green mb-3;
   }
   
   /* Form styles */
   .form-input {
-    @apply w-full px-3 py-2 border border-mascate-200 rounded-lg focus:ring-2 focus:ring-mascate-500 focus:border-mascate-500 bg-mascate-50 text-base;
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mascate-yellow focus:border-mascate-yellow bg-white text-base;
   }
   
   .form-label {
-    @apply block text-sm font-medium text-mascate-800 mb-1;
+    @apply block text-sm font-medium text-mascate-green mb-1;
   }
   
   /* Navigation styles */

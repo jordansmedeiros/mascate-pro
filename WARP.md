@@ -318,11 +318,11 @@ The system can migrate data from a previous localStorage-based version:
 - Automatic migration transforms data to new SQLite schema
 - Preserves user accounts and product catalog
 
-### Supabase Migration (Future)
-Database service is abstracted to allow gradual migration from SQLite to Supabase:
-- Environment variable `VITE_USE_LOCAL_DB` controls data source
-- Same service interface works with both backends
-- React Query cache works identically
+### Database Export/Import
+The system supports data backup and restore:
+- `exportDatabase()` creates a JSON backup of all data
+- `importDatabase()` restores from backup file
+- All data stored locally in browser's localStorage
 
 ## Common Development Tasks
 
