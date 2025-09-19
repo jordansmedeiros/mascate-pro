@@ -10,7 +10,7 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 - **Portuguese language**: Business logic documentation and UI text
 - **Mobile-responsive**: Works on phones and computers
 - **Role-based access**: Superadmin → Admin → User hierarchy
-- **Simple workflow**: Add products → Quick sales (−1, −2, −5 buttons) → Stock alerts
+- **Simple workflow**: Add products → Quick sales → Stock alerts
 
 ## Development Commands
 
