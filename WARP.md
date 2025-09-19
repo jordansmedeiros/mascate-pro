@@ -8,7 +8,6 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 
 ### Key Characteristics
 - **Portuguese language**: Business logic documentation and UI text
-- **Offline-first**: SQLite in browser with localStorage persistence
 - **Mobile-responsive**: Works on phones and computers
 - **Role-based access**: Superadmin → Admin → User hierarchy
 - **Simple workflow**: Add products → Quick sales (−1, −2, −5 buttons) → Stock alerts
@@ -17,8 +16,14 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 
 ### Core Development
 ```bash
-# Start development server
+# Start development server (Frontend + Backend)
+npm run dev:full
+
+# Start development server (Frontend only)
 npm run dev
+
+# Start development server (Backend only)
+npm run server
 
 # Build for production
 npm run build
@@ -82,50 +87,38 @@ src/
 │   ├── ui/           # Base components (Button, Card, etc.)
 │   └── layout/       # Layout components
 ├── services/         # External integrations
-│   ├── db/           # Database service (SQLite)
-│   └── api/          # Supabase API (optional)
-├── hooks/            # Cross-feature custom hooks
 ├── types/            # TypeScript definitions
 └── utils/            # General utilities
+
+api/                  # Vercel Serverless Functions
+├── auth.ts           # Authentication
+├── db.ts             # Conexão com o banco de dados
+├── products.ts       # CRUD de produtos
+├── stock-movements.ts# Movimentação de estoque
+└── users.ts          # CRUD de usuários
 ```
 
 ### Data Flow Pattern
 ```
-UI Component → React Query Hook → Database Service → SQLite (localStorage) → Cache
+UI Component → React Query Hook → API Client → Vercel Function → PostgreSQL
      ↓              ↓                    ↓                   ↓              ↓
-   Form         useProducts()       browser-db.ts      localStorage    TanStack Query
-  Button        useCreateProduct()     CRUD ops       persistence        cache
+   Form         useProducts()       api-client.ts         /api/products      Database
+  Button        useCreateProduct()     HTTP calls         CRUD ops           Cache
 ```
 
 ## Database Service
 
-### SQLite in Browser
-The system uses `sql.js` for SQLite database in the browser with localStorage persistence:
-
-```typescript
-// Service pattern
-const db = await getDatabase();
-const products = await db.products.findAll();
-await db.products.create(productData);
-await db.stockMovements.create(movementData);
-```
-
-### Storage Keys Pattern
-- `mascate_stock_v2_users`
-- `mascate_stock_v2_products` 
-- `mascate_stock_v2_stock_movements`
-- `mascate_stock_v2_activity_logs`
-
-### Automatic Seeding
-Database initializes with sample data if empty (dev environment).
+The application uses a PostgreSQL database hosted on a remote server. The connection is managed by the backend, which can be either the local Express server for development or the Vercel Serverless Functions in production.
 
 ## Authentication & Authorization
 
-### Local Authentication
-The system uses a simple local authentication system:
-- Username/password stored in local SQLite database
-- Session persistence via localStorage
-- No external dependencies or cloud services
+The system uses a custom authentication system with a PostgreSQL database. The authentication flow is as follows:
+
+1.  The user enters their email and password in the login form.
+2.  The frontend sends a POST request to the `/api/auth` endpoint.
+3.  The backend verifies the credentials against the `users` table in the database.
+4.  If the credentials are valid, the backend returns a user object.
+5.  The frontend stores the user object in the `AuthContext` and redirects the user to the dashboard.
 
 ### Role Hierarchy
 ```typescript
@@ -225,7 +218,7 @@ const form = useForm<ProductFormData>({
 ### Requirements
 - Node.js 18+
 - npm (no specific preference between npm/yarn/pnpm)
-- Modern browser with WebAssembly support
+- PostgreSQL database
 
 ### Environment Variables
 ```bash
@@ -237,8 +230,15 @@ VITE_APP_NAME="Mascate Runeria"
 VITE_APP_VERSION=1.0.0
 VITE_NODE_ENV=development
 
-# Database settings (SQLite local only)
-VITE_DB_NAME=mascate_stock_v2
+# PostgreSQL Database Configuration
+POSTGRES_USER=your_postgres_user
+POSTGRES_PASSWORD=your_postgres_password
+POSTGRES_HOST=your_postgres_host
+POSTGRES_PORT=your_postgres_port
+POSTGRES_DB=your_postgres_database
+
+# Frontend Configuration
+VITE_API_URL="http://localhost:3002/api"
 ```
 
 ### Development Setup
@@ -247,7 +247,8 @@ git clone <repository-url>
 cd mascate-pro
 npm install
 cp .env.example .env
-npm run dev
+# Edit .env with your PostgreSQL credentials
+npm run dev:full
 ```
 
 ## Testing Strategy
@@ -257,34 +258,6 @@ npm run dev
 - **Component Tests**: React Testing Library
 - **E2E Tests**: Playwright
 - **Setup**: `src/test/setup.ts`
-
-### Test Database
-Tests use in-memory SQLite database, not localStorage:
-
-```typescript
-// In test files
-beforeEach(async () => {
-  const db = await getDatabase(); // Gets clean test DB
-  await db.seedTestData();
-});
-```
-
-### Mocking Patterns
-```typescript
-// Mock localStorage database
-vi.mock('@/services/db', () => ({
-  getDatabase: vi.fn(() => mockDatabase)
-}));
-
-// Mock localStorage for clean tests
-const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-};
-Object.defineProperty(window, 'localStorage', { value: localStorageMock });
-```
 
 ## Key Business Logic
 
@@ -310,20 +283,6 @@ const profit = (sale_price - purchase_price) * quantity;
 const margin = ((sale_price - purchase_price) / purchase_price) * 100;
 ```
 
-## Migration Notes
-
-### From Previous MVP
-The system can migrate data from a previous localStorage-based version:
-- Look for `mascate_usuarios`, `mascate_produtos`, `mascate_logs` keys
-- Automatic migration transforms data to new SQLite schema
-- Preserves user accounts and product catalog
-
-### Database Export/Import
-The system supports data backup and restore:
-- `exportDatabase()` creates a JSON backup of all data
-- `importDatabase()` restores from backup file
-- All data stored locally in browser's localStorage
-
 ## Common Development Tasks
 
 ### Adding a New Feature Module
@@ -340,10 +299,10 @@ touch src/features/my-feature/index.ts
 ```
 
 ### Adding New Database Entity
-1. Define TypeScript interface in `types/index.ts`
-2. Add table to `services/db/browser-db.ts`
-3. Create React Query hooks in feature module
-4. Add to seed data for development
+1.  Update the `setup-postgresql.js` script to include the new table and columns.
+2.  Run the script to update the database schema.
+3.  Create a new Vercel Serverless Function to handle the CRUD operations for the new entity.
+4.  Update the frontend to use the new API endpoint.
 
 ### Creating Reusable UI Component
 ```typescript

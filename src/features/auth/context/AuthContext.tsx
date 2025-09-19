@@ -83,7 +83,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Save to localStorage and state
         localStorage.setItem('mascate_current_user', JSON.stringify(result.user));
         setUser(result.user);
-        setIsAuthenticated(true);
       } else {
         return { success: false, error: result.error || 'Credenciais inválidas' };
       }
