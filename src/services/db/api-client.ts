@@ -38,7 +38,7 @@ class ApiDatabaseService implements DatabaseService {
     // Usar variável de ambiente ou detectar automaticamente
     this.baseUrl = import.meta.env.VITE_API_URL ||
       (import.meta.env.PROD
-        ? 'https://mascate.sinesys.app/api'    // URL de produção
+        ? '/api'                              // URL relativa em produção (mesma origem)
         : this.detectDevPort());               // Detectar porta de desenvolvimento
   }
 
