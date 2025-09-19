@@ -17,7 +17,8 @@
       "Bash(taskkill:*)",
       "Bash(VITE_API_URL=http://localhost:3002/api npm run dev)",
       "Bash(npm run lint)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []
