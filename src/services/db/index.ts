@@ -1,10 +1,10 @@
-// Use the browser-compatible database service
-import { getDatabase as getBrowserDatabase, closeDatabase as closeBrowserDatabase } from './browser-db';
-import type { DatabaseService } from './browser-db';
+// Use the API client database service
+import { getDatabase as getApiDatabase, closeDatabase as closeApiDatabase } from './api-client';
+import type { DatabaseService } from './api-client';
 
 // Export database service functions
-export const getDatabase = getBrowserDatabase;
-export const closeDatabase = closeBrowserDatabase;
+export const getDatabase = getApiDatabase;
+export const closeDatabase = closeApiDatabase;
 
 // Re-export the DatabaseService type
 export type { DatabaseService };
