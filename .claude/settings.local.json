@@ -15,7 +15,8 @@
       "Bash(VITE_API_URL=http://localhost:3001/api npm run dev)",
       "Bash(netstat:*)",
       "Bash(taskkill:*)",
-      "Bash(VITE_API_URL=http://localhost:3002/api npm run dev)"
+      "Bash(VITE_API_URL=http://localhost:3002/api npm run dev)",
+      "Bash(npm run lint)"
     ],
     "deny": [],
     "ask": []
