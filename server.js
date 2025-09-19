@@ -42,6 +42,11 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
+// Serve static files from the dist directory in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'dist')));
+}
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Express API server running' });
@@ -291,6 +296,13 @@ app.get('/api/activity-logs', async (req, res) => {
     client.release();
   }
 });
+
+// Catch-all handler: send back React's index.html file in production
+if (process.env.NODE_ENV === 'production') {
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  });
+}
 
 // Error handler
 app.use((error, req, res, next) => {
