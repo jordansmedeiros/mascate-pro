@@ -299,8 +299,17 @@ app.get('/api/activity-logs', async (req, res) => {
 
 // Catch-all handler: send back React's index.html file in production
 if (process.env.NODE_ENV === 'production') {
-  app.get('/*', (req, res) => {
+  app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  });
+
+  // Handle SPA routing - serve index.html for non-API routes
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api/')) {
+      next();
+    } else {
+      res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+    }
   });
 }
 
