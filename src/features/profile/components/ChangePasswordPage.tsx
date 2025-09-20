@@ -61,11 +61,11 @@ export const ChangePasswordPage: React.FC = () => {
   };
 
   const getPasswordStrength = (password: string) => {
-    if (password.length === 0) return { strength: 0, label: '', color: '' };
-    if (password.length < 6) return { strength: 25, label: 'Muito fraca', color: 'bg-red-500' };
-    if (password.length < 8) return { strength: 50, label: 'Fraca', color: 'bg-orange-500' };
-    if (password.length < 12) return { strength: 75, label: 'Boa', color: 'bg-yellow-500' };
-    return { strength: 100, label: 'Forte', color: 'bg-green-500' };
+    if (password.length === 0) return { strength: 'progress-0', label: '', color: '' };
+    if (password.length < 6) return { strength: 'progress-25', label: 'Muito fraca', color: 'bg-red-500' };
+    if (password.length < 8) return { strength: 'progress-50', label: 'Fraca', color: 'bg-orange-500' };
+    if (password.length < 12) return { strength: 'progress-75', label: 'Boa', color: 'bg-yellow-500' };
+    return { strength: 'progress-100', label: 'Forte', color: 'bg-green-500' };
   };
 
   const passwordStrength = getPasswordStrength(formData.newPassword);
@@ -140,9 +140,8 @@ export const ChangePasswordPage: React.FC = () => {
               <div className="mt-2">
                 <div className="flex items-center space-x-2">
                   <div className="flex-1 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className={`h-2 rounded-full transition-all duration-300 ${passwordStrength.color}`}
-                      style={{ width: `${passwordStrength.strength}%` }}
+                    <div
+                      className={`h-2 rounded-full transition-all duration-300 ${passwordStrength.color} ${passwordStrength.strength}`}
                     ></div>
                   </div>
                   <span className="text-sm text-gray-600">{passwordStrength.label}</span>

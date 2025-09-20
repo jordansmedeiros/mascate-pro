@@ -340,8 +340,12 @@ export const ConfiguracoesPage: React.FC = () => {
                   <div className="flex items-start justify-between">
                     <div className="flex items-center space-x-3">
                       <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
-                        style={{ backgroundColor: category.color || '#3b82f6' } as React.CSSProperties}
+                        className="category-circle"
+                        ref={(el) => {
+                          if (el && category.color) {
+                            el.style.backgroundColor = category.color;
+                          }
+                        }}
                       >
                         {category.icon || category.name.charAt(0).toUpperCase()}
                       </div>

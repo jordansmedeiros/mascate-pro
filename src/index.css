@@ -102,4 +102,28 @@
   .category-avatar {
     background-color: var(--category-color, #3b82f6);
   }
+
+  .dynamic-bg {
+    background-color: var(--dynamic-color, #3b82f6);
+  }
+
+  /* Category avatar with data attribute approach */
+  .category-circle {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    background-color: #3b82f6; /* fallback */
+  }
+
+  /* Password strength progress bar utilities */
+  .progress-0 { width: 0%; }
+  .progress-25 { width: 25%; }
+  .progress-50 { width: 50%; }
+  .progress-75 { width: 75%; }
+  .progress-100 { width: 100%; }
 }
