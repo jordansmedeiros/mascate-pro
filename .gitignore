@@ -13,7 +13,11 @@ dist-ssr
 # Environment files
 .env
 .env.production
+.env.local-db
 .env.*.local
+
+# Scripts com informações sensíveis
+scripts/check-users.js
 
 # Editor directories and files
 .vscode/*

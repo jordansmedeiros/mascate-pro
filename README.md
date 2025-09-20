@@ -1,9 +1,12 @@
-# Mascate Runeria - Controle de Caixa
+# Sistema de Controle de Estoque - Mascate Runeria
 
-**Sistema SIMPLES de controle de estoque para casa noturna**
-Uma aplicação **super simples e rápida** para controle dos pequenos itens vendidos no caixa da casa noturna (seda, cigarros, chocolates, balas, etc.).
+> **⚠️ DISCLAIMER IMPORTANTE**
+> Este **NÃO é um projeto oficial** patrocinado ou desenvolvido pela empresa Mascate Runeria. Foi desenvolvido gratuitamente a pedido de uma amiga que trabalha no estabelecimento para fazer a gestão de estoque dos itens de headshop e bomboniere presentes no caixa do estabelecimento. Este projeto é **independente** e **não possui qualquer vínculo comercial** com a marca Mascate Runeria.
 
-> **FOCO**: Dar baixa rápida nos produtos vendidos. Não é um PDV profissional, é apenas para controlar os "negocinho do caixa"!
+**Sistema SIMPLES de controle de estoque para headshop e bomboniere**
+Uma aplicação **super simples e rápida** para controle dos pequenos itens vendidos no caixa (seda, isqueiros, chocolates, balas, etc.).
+
+> **FOCO**: Dar baixa rápida nos produtos vendidos. Não é um PDV profissional, é apenas para controlar os "itens do caixa"!
 
 ## Features (Simplicidade em Primeiro Lugar!)
 
@@ -18,7 +21,7 @@ Uma aplicação **super simples e rápida** para controle dos pequenos itens ven
 
 - **Cadastro simples**: Nome, categoria, preços, estoque
 - **Visualização em cards**: Fácil de ver e editar
-- **Categorias básicas**: Doce, Fumo, Bebida, Outros
+- **Categorias personalizáveis**: Sistema flexível de categorização (Doce, Fumo, Bebida, Headshop, etc.)
 
 ### **Controles Básicos**
 
@@ -133,8 +136,11 @@ src/
 |   |-- dashboard/    # Dashboard e estatísticas
 |   |-- products/     # Gerenciamento de produtos
 |   |-- stock/        # Movimentação de estoque
-|   |-- users/        # Gestão de usuários
-|   \-- logs/         # Logs e auditoria
+|   |-- categories/   # Gestão de categorias
+|   |-- users/        # Gestão de usuários (dentro de configurações)
+|   |-- logs/         # Logs e auditoria (dentro de configurações)
+|   |-- config/       # Configurações centralizadas
+|   \-- profile/      # Perfil do usuário
 |-- components/       # Componentes reutilizáveis
 |   |-- ui/           # Componentes base (Button, Card, etc.)
 |   \-- layout/       # Componentes de layout
@@ -159,11 +165,11 @@ api/                  # Vercel Serverless Functions
 - **Admin**: Gerenciamento de produtos e estoque (sem gestão de usuários)
 - **User**: Visualização e operações básicas de estoque
 
-### Credenciais de Desenvolvimento
+### Configuração Inicial
 
-- **Usuário**: `admin`
-- **Senha**: `admin`
-- **Acesso**: Superadmin (acesso total)
+- Configure as variáveis de ambiente conforme o arquivo `.env.example`
+- O primeiro usuário cadastrado automaticamente recebe privilégios de Super Admin
+- Para desenvolvimento, consulte a documentação interna sobre credenciais de teste
 
 ## Funcionalidades Principais
 
@@ -177,10 +183,11 @@ api/                  # Vercel Serverless Functions
 ### Gestão de Produtos
 
 - CRUD completo com validação
-- Categorização por tipo (fumo, doce, bebida, etc.)
-- Controle de preços (compra/venda)
-- Definição de estoque mínimo
+- Sistema de categorias personalizáveis com cores e ícones
+- Controle de preços com formatação brasileira (vírgula para centavos)
+- Definição de estoque mínimo e alertas automáticos
 - Cálculo automático de margem de lucro
+- Interface responsiva com cards e tabelas
 
 ### Controle de Estoque
 
@@ -191,9 +198,21 @@ api/                  # Vercel Serverless Functions
   - **Devolução** - Retorno de produtos
   - **Perda** - Produtos danificados/perdidos
 
+## Funcionalidades Recentes
+
+### Interface Reorganizada
+- **Menu de Configurações Centralizado**: Usuários, Logs, Backup e Manutenção agora estão organizados em um módulo de configurações
+- **Controle de Acesso por Roles**: Diferentes seções são exibidas baseadas no nível de acesso do usuário
+- **Formatação Brasileira**: Preços exibidos com vírgula (R$ 1.234,56) seguindo padrão nacional
+
+### Melhorias de Usabilidade
+- **Inputs de Preço Inteligentes**: Aceitam digitação com vírgula ou ponto, formatando automaticamente
+- **Acessibilidade Aprimorada**: Formulários com labels adequados e navegação por teclado
+- **Interface Responsiva**: Funciona perfeitamente em dispositivos móveis e desktop
+
 ## Deployment
 
-O projeto é deployado na Vercel. As Serverless Functions na pasta `api` são usadas para se comunicar com o banco de dados PostgreSQL.
+O projeto pode ser deployado em diversas plataformas que suportam Node.js e PostgreSQL. As funções de API estão organizadas para fácil adaptação a diferentes ambientes de produção.
 
 ## Contributing
 
