@@ -1,63 +1,63 @@
 # Configuração de Conexão com Banco de Dados
 
-## Estrutura de Arquivos de Ambiente
-
-Mantemos apenas 3 arquivos:
-- **`.env`** - Configurações de desenvolvimento (valores padrão)
-- **`.env.example`** - Template de documentação (sem valores sensíveis)
-- **`.env.production`** - Configurações de produção (não versionado no git)
-
 ## Ambientes
 
 ### Desenvolvimento (Local)
+
 - **Host**: postgres.platform.sinesys.app (conexão remota via HTTPS)
 - **Porta**: 5432
 - **Banco**: postgres
 - **SSL**: Habilitado (rejectUnauthorized: false para desenvolvimento)
-- **Arquivo**: `.env` (padrão)
+- **Arquivo de configuração**: `.env.development`
 
 ### Produção (CapRover)
+
 - **Host**: srv-captain--postgres (nome do container interno)
 - **Porta**: 5432
 - **Banco**: postgres
 - **SSL**: Desabilitado (conexão interna entre containers)
-- **Arquivo**: `.env.production` (criado no deploy)
+- **Arquivo de configuração**: `.env.production`
 
 ## Como usar
 
 ### Desenvolvimento local:
+
 ```bash
-# Usa .env automaticamente
-npm run dev:full    # Frontend + Backend
-npm run server      # Apenas backend
-npm run dev         # Apenas frontend
+# Carrega automaticamente .env.development
+npm run dev:full
+
+# Ou rodar servidor apenas
+npm run server:dev
 ```
 
 ### Produção:
+
 ```bash
-# Cria .env.production no servidor com as configs de produção
+# Carrega automaticamente .env.production
 NODE_ENV=production npm start
 
-# Ou
+# Ou com script específico
 npm run start:prod
 ```
 
-## Configuração do .env
+## Estrutura dos arquivos .env
 
-### Para Desenvolvimento (.env)
+### .env.development
+
 ```env
 NODE_ENV=development
 POSTGRES_HOST=postgres.platform.sinesys.app
 POSTGRES_SSL=true
-VITE_API_URL=http://localhost:3002/api
+# ... outras configs
 ```
 
-### Para Produção (.env.production)
+### .env.production
+
 ```env
 NODE_ENV=production
 POSTGRES_HOST=srv-captain--postgres
-POSTGRES_SSL=false
-VITE_API_URL=/api
+# SSL não é necessário para conexão interna
+# ... outras configs
 ```
 
 ## Notas importantes
