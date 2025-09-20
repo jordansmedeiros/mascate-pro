@@ -287,15 +287,17 @@ export const UsersPage: React.FC = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="form-label">Nível de Acesso *</label>
+                <label htmlFor="user-role" className="form-label">Nível de Acesso *</label>
                 <select
+                  id="user-role"
                   className="form-input"
                   value={formData.role}
-                  onChange={(e) => setFormData(prev => ({ 
-                    ...prev, 
-                    role: e.target.value as 'user' | 'admin' | 'superadmin' 
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    role: e.target.value as 'user' | 'admin' | 'superadmin'
                   }))}
                   required
+                  aria-label="Selecionar nível de acesso do usuário"
                 >
                   <option value="user">👤 Usuário - Visualização e operações básicas</option>
                   <option value="admin">🔧 Administrador - Gerenciar produtos e estoque</option>

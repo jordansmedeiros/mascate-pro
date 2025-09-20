@@ -2,12 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { getAvatarIcon } from '@/constants/avatars';
-import { 
-  LayoutDashboard, 
+import {
+  LayoutDashboard,
   Package,
-  ShoppingCart, 
-  Users, 
-  ScrollText,
+  ShoppingCart,
   Settings,
   LogOut,
   ChevronDown,
@@ -39,20 +37,8 @@ const navItems: NavItem[] = [
     icon: Package,
   },
   {
-    to: '/usuarios',
-    label: 'Usuários',
-    icon: Users,
-    requiresRole: 'superadmin',
-  },
-  {
-    to: '/logs',
-    label: 'Logs',
-    icon: ScrollText,
-    requiresRole: 'admin',
-  },
-  {
     to: '/configuracoes',
-    label: 'Config',
+    label: 'Configurações',
     icon: Settings,
   },
 ];
@@ -148,7 +134,7 @@ export const TopNavbar: React.FC = () => {
               {/* Info do usuário */}
               <div className="hidden sm:flex flex-col text-right">
                 <span className="font-medium text-sm">
-                  {user?.displayName || user?.username}
+                  {user?.displayName}
                 </span>
               </div>
 
@@ -165,7 +151,7 @@ export const TopNavbar: React.FC = () => {
             {isDropdownOpen && (
               <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
                 <div className="px-4 py-2 border-b border-gray-100">
-                  <p className="font-medium text-gray-900">{user?.displayName || user?.username}</p>
+                  <p className="font-medium text-gray-900">{user?.displayName}</p>
                   <p className="text-sm text-gray-500">{user?.email}</p>
                 </div>
                 

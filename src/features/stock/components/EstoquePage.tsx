@@ -6,6 +6,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useProducts, useUpdateProductStock } from '@/features/products/hooks/useProducts';
 import { Minus, ShoppingCart, Search } from 'lucide-react';
 import type { Product } from '@/types';
+import { formatCurrency } from '@/utils/currency';
 
 export const EstoquePage: React.FC = () => {
   const { data: products, isLoading } = useProducts();
@@ -134,7 +135,7 @@ export const EstoquePage: React.FC = () => {
                       </span>
                     </div>
                     <div className="text-xl font-bold text-green-600 mt-1">
-                      R$ {product.sale_price.toFixed(2)}
+                      {formatCurrency(product.sale_price)}
                     </div>
                   </div>
 

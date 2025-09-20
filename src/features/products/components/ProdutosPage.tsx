@@ -10,6 +10,7 @@ import { useCategories, useCreateCategory } from '@/features/categories/hooks/us
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { showToast } from '@/components/ui/Toast';
 import type { Product, ProductFormData, CategoryFormData } from '@/types';
+import { formatCurrency, parseCurrencyValue, formatCurrencyInput } from '@/utils/currency';
 
 export const ProdutosPage: React.FC = () => {
   const { data: products, isLoading } = useProducts();
@@ -32,6 +33,12 @@ export const ProdutosPage: React.FC = () => {
     sale_price: 0,
     minimum_stock: 10,
     current_stock: 0
+  });
+
+  // Campos separados para formatação de preços
+  const [priceInputs, setPriceInputs] = useState({
+    purchase_price: '0,00',
+    sale_price: '0,00'
   });
 
   // Category modal states
@@ -57,6 +64,10 @@ export const ProdutosPage: React.FC = () => {
       sale_price: 0,
       minimum_stock: 10,
       current_stock: 0
+    });
+    setPriceInputs({
+      purchase_price: '0,00',
+      sale_price: '0,00'
     });
   };
 
@@ -116,6 +127,10 @@ export const ProdutosPage: React.FC = () => {
       sale_price: product.sale_price,
       minimum_stock: product.minimum_stock,
       current_stock: product.current_stock
+    });
+    setPriceInputs({
+      purchase_price: formatCurrencyInput(product.purchase_price.toString()),
+      sale_price: formatCurrencyInput(product.sale_price.toString())
     });
     setShowForm(true);
   };
@@ -182,14 +197,16 @@ export const ProdutosPage: React.FC = () => {
             />
             
             <div>
-              <label className="form-label">Categoria *</label>
+              <label htmlFor="product-category" className="form-label">Categoria *</label>
               <div className="flex items-center space-x-2">
                 <select
+                  id="product-category"
                   className="form-input flex-1"
                   value={formData.category}
                   onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                   required
                   disabled={categoriesLoading}
+                  aria-label="Selecionar categoria do produto"
                 >
                   {categoriesLoading ? (
                     <option>Carregando categorias...</option>
@@ -228,21 +245,37 @@ export const ProdutosPage: React.FC = () => {
 
             <Input
               label="Preço de Compra *"
-              type="number"
-              step="0.01"
-              value={formData.purchase_price}
-              onChange={(e) => setFormData(prev => ({ ...prev, purchase_price: parseFloat(e.target.value) || 0 }))}
-              placeholder="0.00"
+              type="text"
+              value={priceInputs.purchase_price}
+              onChange={(e) => {
+                const value = e.target.value;
+                setPriceInputs(prev => ({ ...prev, purchase_price: value }));
+                const numericValue = parseCurrencyValue(value);
+                setFormData(prev => ({ ...prev, purchase_price: numericValue }));
+              }}
+              onBlur={(e) => {
+                const formatted = formatCurrencyInput(e.target.value);
+                setPriceInputs(prev => ({ ...prev, purchase_price: formatted }));
+              }}
+              placeholder="0,00"
               required
             />
             
             <Input
               label="Preço de Venda *"
-              type="number"
-              step="0.01"
-              value={formData.sale_price}
-              onChange={(e) => setFormData(prev => ({ ...prev, sale_price: parseFloat(e.target.value) || 0 }))}
-              placeholder="0.00"
+              type="text"
+              value={priceInputs.sale_price}
+              onChange={(e) => {
+                const value = e.target.value;
+                setPriceInputs(prev => ({ ...prev, sale_price: value }));
+                const numericValue = parseCurrencyValue(value);
+                setFormData(prev => ({ ...prev, sale_price: numericValue }));
+              }}
+              onBlur={(e) => {
+                const formatted = formatCurrencyInput(e.target.value);
+                setPriceInputs(prev => ({ ...prev, sale_price: formatted }));
+              }}
+              placeholder="0,00"
               required
             />
 
@@ -337,16 +370,16 @@ export const ProdutosPage: React.FC = () => {
                 <div className="flex justify-between text-sm">
                   <div>
                     <div className="text-gray-500">Compra:</div>
-                    <div className="font-medium">R$ {product.purchase_price.toFixed(2)}</div>
+                    <div className="font-medium">{formatCurrency(product.purchase_price)}</div>
                   </div>
                   <div>
                     <div className="text-gray-500">Venda:</div>
-                    <div className="font-medium text-green-600">R$ {product.sale_price.toFixed(2)}</div>
+                    <div className="font-medium text-green-600">{formatCurrency(product.sale_price)}</div>
                   </div>
                   <div>
                     <div className="text-gray-500">Lucro:</div>
                     <div className="font-medium text-mascate-600">
-                      R$ {(product.sale_price - product.purchase_price).toFixed(2)}
+                      {formatCurrency(product.sale_price - product.purchase_price)}
                     </div>
                   </div>
                 </div>

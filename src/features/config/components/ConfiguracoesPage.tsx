@@ -8,6 +8,8 @@ import { showToast, showConfirmToast } from '@/components/ui/Toast';
 import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '@/features/categories/hooks/useCategories';
 import { getDatabase } from '@/services/db';
 import type { Category, CategoryFormData } from '@/types';
+import { UsersPage } from '@/features/users/components/UsersPage';
+import { LogsPage } from '@/features/logs/components/LogsPage';
 import {
   Database,
   Download,
@@ -22,7 +24,9 @@ import {
   Tags,
   Plus,
   Edit3,
-  Trash2
+  Trash2,
+  Users,
+  ScrollText
 } from 'lucide-react';
 
 interface ConfigSection {
@@ -30,6 +34,7 @@ interface ConfigSection {
   description: string;
   icon: React.ReactNode;
   component: React.ReactNode;
+  requiresRole?: 'admin' | 'superadmin';
 }
 
 export const ConfiguracoesPage: React.FC = () => {
@@ -303,11 +308,7 @@ export const ConfiguracoesPage: React.FC = () => {
       icon: <Tags className="h-6 w-6" />,
       component: (
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <p className="text-gray-600">
-              Adicione e gerencie categorias para organizar seus produtos.
-            </p>
-            <Button
+          <Button
               onClick={() => {
                 setEditingCategory(null);
                 setCategoryForm({
@@ -324,8 +325,6 @@ export const ConfiguracoesPage: React.FC = () => {
               <Plus className="h-4 w-4 mr-2" />
               Nova Categoria
             </Button>
-          </div>
-
           {categoriesLoading ? (
             <div className="text-center py-8">
               <div className="text-gray-500">Carregando categorias...</div>
@@ -393,6 +392,20 @@ export const ConfiguracoesPage: React.FC = () => {
           )}
         </div>
       )
+    },
+    {
+      title: 'Usuários',
+      description: 'Gerencie usuários do sistema',
+      icon: <Users className="h-6 w-6" />,
+      requiresRole: 'superadmin',
+      component: <UsersPage />
+    },
+    {
+      title: 'Logs',
+      description: 'Visualize logs e atividades do sistema',
+      icon: <ScrollText className="h-6 w-6" />,
+      requiresRole: 'admin',
+      component: <LogsPage />
     },
     {
       title: 'Regras de Negócio',
@@ -477,6 +490,7 @@ export const ConfiguracoesPage: React.FC = () => {
       title: 'Backup & Restauração',
       description: 'Gerencie backups e restauração de dados',
       icon: <Database className="h-6 w-6" />,
+      requiresRole: 'superadmin',
       component: (
         <div className="space-y-6">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -587,6 +601,7 @@ export const ConfiguracoesPage: React.FC = () => {
       title: 'Manutenção do Sistema',
       description: 'Limpeza de dados e manutenção geral',
       icon: <HardDrive className="h-6 w-6" />,
+      requiresRole: 'superadmin',
       component: (
         <div className="space-y-6">
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -682,7 +697,19 @@ export const ConfiguracoesPage: React.FC = () => {
     }
   ];
 
-  const currentSection = sections.find(s => s.title.toLowerCase().replace(/\s+/g, '_').replace(/[àáâãäå]/g, 'a').replace(/[èéêë]/g, 'e').replace(/[ìíîï]/g, 'i').replace(/[òóôõö]/g, 'o').replace(/[ùúûü]/g, 'u').replace(/[ç]/g, 'c') === activeSection);
+  // Filter sections based on user role
+  const visibleSections = sections.filter(section => {
+    if (!section.requiresRole) return true;
+    if (!user) return false;
+
+    const roleHierarchy = { 'user': 1, 'admin': 2, 'superadmin': 3 };
+    const userLevel = roleHierarchy[user.role];
+    const requiredLevel = roleHierarchy[section.requiresRole];
+
+    return userLevel >= requiredLevel;
+  });
+
+  const currentSection = visibleSections.find(s => s.title.toLowerCase().replace(/\s+/g, '_').replace(/[àáâãäå]/g, 'a').replace(/[èéêë]/g, 'e').replace(/[ìíîï]/g, 'i').replace(/[òóôõö]/g, 'o').replace(/[ùúûü]/g, 'u').replace(/[ç]/g, 'c') === activeSection);
 
   if (!user) {
     return (
@@ -697,7 +724,7 @@ export const ConfiguracoesPage: React.FC = () => {
       {/* Navigation Tabs */}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8 overflow-x-auto">
-          {sections.map((section) => {
+          {visibleSections.map((section) => {
             const sectionKey = section.title.toLowerCase().replace(/\s+/g, '_').replace(/[àáâãäå]/g, 'a').replace(/[èéêë]/g, 'e').replace(/[ìíîï]/g, 'i').replace(/[òóôõö]/g, 'o').replace(/[ùúûü]/g, 'u').replace(/[ç]/g, 'c');
             return (
               <button

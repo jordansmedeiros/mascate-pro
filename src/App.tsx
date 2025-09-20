@@ -7,8 +7,6 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Dashboard } from '@/features/dashboard/components/Dashboard';
 import { ProdutosPage } from '@/features/products/components/ProdutosPage';
 import { EstoquePage } from '@/features/stock/components/EstoquePage';
-import { UsersPage } from '@/features/users/components/UsersPage';
-import { LogsPage } from '@/features/logs/components/LogsPage';
 import { ProfilePage } from '@/features/profile/components/ProfilePage';
 import { ChangePasswordPage } from '@/features/profile/components/ChangePasswordPage';
 import { ConfiguracoesPage } from '@/features/config/components/ConfiguracoesPage';
@@ -122,28 +120,6 @@ const AppRoutes: React.FC = () => {
           <ProtectedRoute>
             <AppLayout>
               <EstoquePage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/usuarios"
-        element={
-          <ProtectedRoute requiredRole="superadmin">
-            <AppLayout>
-              <UsersPage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/logs"
-        element={
-          <ProtectedRoute requiredRole="admin">
-            <AppLayout>
-              <LogsPage />
             </AppLayout>
           </ProtectedRoute>
         }
