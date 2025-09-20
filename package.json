@@ -19,6 +19,7 @@
   },
   "scripts": {
     "start": "node server.js",
+    "start:prod": "NODE_ENV=production node server.js",
     "dev": "vite",
     "dev:full": "concurrently \"npm run server\" \"npm run dev\" --names \"server,vite\" --prefix-colors \"green,blue\"",
     "server": "nodemon server.js",
@@ -51,6 +52,7 @@
     "clsx": "^2.1.1",
     "concurrently": "^9.2.1",
     "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
     "express": "^5.1.0",
     "lucide-react": "^0.544.0",
     "pg": "^8.16.3",

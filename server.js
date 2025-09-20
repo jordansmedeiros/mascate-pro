@@ -11,18 +11,35 @@ const { Pool } = pkg;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Detecta se está em produção ou desenvolvimento
+const isDevelopment = process.env.NODE_ENV === 'development';
+const isProduction = process.env.NODE_ENV === 'production';
+
+// Configuração SSL para conexão remota em desenvolvimento
+const sslConfig = isDevelopment && process.env.POSTGRES_SSL === 'true' ? {
+  rejectUnauthorized: false // Para desenvolvimento, aceita certificados auto-assinados
+} : false;
+
 // Configuração do pool PostgreSQL para o servidor Express
-const pool = new Pool({
+// Usa configurações diferentes baseadas no ambiente
+const poolConfig = {
   user: process.env.POSTGRES_USER || 'postgres',
   password: process.env.POSTGRES_PASSWORD || '4c6c4d5fb548a9cb',
-  host: process.env.POSTGRES_HOST || 'srv-captain--postgres',
+  host: process.env.POSTGRES_HOST || (isProduction ? 'srv-captain--postgres' : 'postgres.platform.sinesys.app'),
   port: parseInt(process.env.POSTGRES_PORT || '5432'),
   database: process.env.POSTGRES_DB || 'postgres',
-  ssl: false,
+  ssl: sslConfig,
   max: 10,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,
-});
+};
+
+const pool = new Pool(poolConfig);
+
+// Log da configuração de conexão (sem expor senha)
+console.log(`Database connection configured for ${isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION'} environment`);
+console.log(`Connecting to: ${poolConfig.host}:${poolConfig.port}/${poolConfig.database}`);
+console.log(`SSL: ${poolConfig.ssl ? 'Enabled' : 'Disabled'}`);
 
 const app = express();
 const PORT = process.env.PORT || 3002;
