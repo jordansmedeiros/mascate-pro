@@ -629,7 +629,7 @@ app.get('/api/stock-movements', async (req, res) => {
       SELECT sm.id, sm.product_id, sm.user_id, sm.type, sm.quantity, sm.price_per_unit,
              sm.total_value, sm.notes, sm.created_at,
              p.name as product_name,
-             u.username as user_name
+             u.display_name as user_name
       FROM mascate_pro.stock_movements sm
       LEFT JOIN mascate_pro.products p ON sm.product_id = p.id
       LEFT JOIN mascate_pro.users u ON sm.user_id = u.id
@@ -653,7 +653,7 @@ app.get('/api/activity-logs', async (req, res) => {
   try {
     const result = await client.query(`
       SELECT al.id, al.user_id, al.action, al.details, al.ip_address, al.user_agent, al.created_at,
-             u.username as user_name
+             u.display_name as user_name
       FROM mascate_pro.activity_logs al
       LEFT JOIN mascate_pro.users u ON al.user_id = u.id
       ORDER BY al.created_at DESC
@@ -725,6 +725,43 @@ app.get('/api/categories', async (req, res) => {
 
   } catch (error) {
     console.error('Get categories error:', error);
+    return res.status(500).json({ error: 'Erro interno do servidor' });
+  } finally {
+    client.release();
+  }
+});
+
+// Get single category endpoint
+app.get('/api/categories/:id', async (req, res) => {
+  console.log('GET /api/categories/:id request received:', req.params.id);
+
+  let client;
+  try {
+    client = await pool.connect();
+  } catch (dbError) {
+    console.error('Database connection error for get category by id:', dbError);
+    return res.status(500).json({
+      error: 'Erro ao conectar ao banco de dados'
+    });
+  }
+
+  try {
+    const { id } = req.params;
+
+    const result = await client.query(`
+      SELECT id, name, description, icon, color, active, created_at, updated_at, created_by
+      FROM mascate_pro.categories
+      WHERE id = $1
+    `, [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Categoria não encontrada' });
+    }
+
+    return res.json(result.rows[0]);
+
+  } catch (error) {
+    console.error('Get category by id error:', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   } finally {
     client.release();

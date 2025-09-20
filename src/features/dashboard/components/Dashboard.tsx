@@ -316,27 +316,6 @@ export const Dashboard: React.FC = () => {
           </div>
         </Card>
       )}
-
-      {/* Dicas Rápidas */}
-      <Card className="bg-gradient-to-r from-mascate-green to-green-600 text-white">
-        <div className="text-center py-6">
-          <h3 className="text-xl font-bold mb-4">💡 Dicas para Otimizar seu Estoque</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div className="bg-white bg-opacity-20 rounded-lg p-4">
-              <h4 className="font-semibold mb-2">🎯 Foque no Giro Rápido</h4>
-              <p>Produtos que vendem bem merecem atenção especial. Mantenha sempre em estoque!</p>
-            </div>
-            <div className="bg-white bg-opacity-20 rounded-lg p-4">
-              <h4 className="font-semibold mb-2">⏰ Antecipe-se</h4>
-              <p>Use o "Comprar em Breve" para planejar suas compras e evitar faltas.</p>
-            </div>
-            <div className="bg-white bg-opacity-20 rounded-lg p-4">
-              <h4 className="font-semibold mb-2">💰 Monitore o Valor</h4>
-              <p>Acompanhe onde está seu dinheiro investido para tomar decisões inteligentes.</p>
-            </div>
-          </div>
-        </div>
-      </Card>
     </div>
   );
 };

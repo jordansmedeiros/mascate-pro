@@ -6,6 +6,7 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -111,11 +112,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const refreshUser = async () => {
+    try {
+      if (user) {
+        console.log('🔄 AuthContext: Atualizando dados do usuário...');
+        const db = await getDatabase();
+        const currentUser = await db.getUserById(user.id);
+
+        if (currentUser && currentUser.active) {
+          console.log('✅ AuthContext: Dados do usuário atualizados');
+          setUser(currentUser);
+          localStorage.setItem('mascate_current_user', JSON.stringify(currentUser));
+        } else {
+          console.log('❌ AuthContext: Usuário não encontrado ou inativo, fazendo logout');
+          await logout();
+        }
+      }
+    } catch (error) {
+      console.error('❌ AuthContext: Erro ao atualizar dados do usuário:', error);
+    }
+  };
+
   const logout = async () => {
     try {
       if (user) {
         const db = await getDatabase();
-        
+
         // Log the logout
         await db.createActivityLog({
           user_id: user.id,
@@ -138,6 +160,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     user,
     login,
     logout,
+    refreshUser,
     isLoading,
   };
 

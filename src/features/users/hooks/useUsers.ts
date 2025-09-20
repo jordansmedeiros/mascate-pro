@@ -49,7 +49,6 @@ export const useUser = (id: string) => {
 
 // Interface for creating new user
 interface CreateUserData {
-  username: string;
   email: string;
   displayName: string;
   avatarId: string;
@@ -70,15 +69,10 @@ export const useCreateUser = () => {
 
       const db = await getDatabase();
       
-      // Check if username or email already exists
+      // Check if email already exists
       const existingUsers = await db.getUsers();
-      const usernameExists = existingUsers.some(u => u.username === userData.username);
       const emailExists = existingUsers.some(u => u.email === userData.email);
-      
-      if (usernameExists) {
-        throw new Error('Nome de usuário já existe');
-      }
-      
+
       if (emailExists) {
         throw new Error('Email já está em uso');
       }
@@ -92,7 +86,7 @@ export const useCreateUser = () => {
       await db.createActivityLog({
         user_id: user.id,
         action: 'USER_CREATED',
-        details: `Usuário "${newUser.username}" criado com role "${newUser.role}"`,
+        details: `Usuário "${newUser.displayName}" criado com role "${newUser.role}"`,
         ip_address: '127.0.0.1',
         user_agent: navigator.userAgent,
       });
@@ -124,22 +118,12 @@ export const useUpdateUser = () => {
         throw new Error('Você não pode desativar sua própria conta');
       }
       
-      // If changing username or email, check for duplicates
-      if (updates.username || updates.email) {
+      // If changing email, check for duplicates
+      if (updates.email) {
         const existingUsers = await db.getUsers();
-        
-        if (updates.username) {
-          const usernameExists = existingUsers.some(u => u.id !== id && u.username === updates.username);
-          if (usernameExists) {
-            throw new Error('Nome de usuário já existe');
-          }
-        }
-        
-        if (updates.email) {
-          const emailExists = existingUsers.some(u => u.id !== id && u.email === updates.email);
-          if (emailExists) {
-            throw new Error('Email já está em uso');
-          }
+        const emailExists = existingUsers.some(u => u.id !== id && u.email === updates.email);
+        if (emailExists) {
+          throw new Error('Email já está em uso');
         }
       }
 
@@ -149,7 +133,7 @@ export const useUpdateUser = () => {
       await db.createActivityLog({
         user_id: user.id,
         action: 'USER_UPDATED',
-        details: `Usuário "${updatedUser.username}" atualizado`,
+        details: `Usuário "${updatedUser.displayName}" atualizado`,
         ip_address: '127.0.0.1',
         user_agent: navigator.userAgent,
       });
@@ -194,7 +178,7 @@ export const useDeleteUser = () => {
       await db.createActivityLog({
         user_id: user.id,
         action: 'USER_DELETED',
-        details: `Usuário "${targetUser.username}" desativado`,
+        details: `Usuário "${targetUser.displayName}" desativado`,
         ip_address: '127.0.0.1',
         user_agent: navigator.userAgent,
       });
@@ -226,7 +210,7 @@ export const useResetUserPassword = () => {
 
       // For this simple system, we'll just use a default password
       // In production, this would generate a secure temporary password
-      const defaultPassword = `${targetUser.username}123`;
+      const defaultPassword = `${targetUser.email.split('@')[0]}123`;
       
       // Note: In a real system, you'd hash the password here
       // For now, we'll just log the action
@@ -235,12 +219,12 @@ export const useResetUserPassword = () => {
       await db.createActivityLog({
         user_id: user.id,
         action: 'PASSWORD_RESET',
-        details: `Senha do usuário "${targetUser.username}" resetada`,
+        details: `Senha do usuário "${targetUser.displayName}" resetada`,
         ip_address: '127.0.0.1',
         user_agent: navigator.userAgent,
       });
 
-      return { username: targetUser.username, newPassword: defaultPassword };
+      return { email: targetUser.email, newPassword: defaultPassword };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.all });

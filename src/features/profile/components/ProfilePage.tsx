@@ -9,11 +9,10 @@ import { showToast } from '@/components/ui/Toast';
 import { User, Mail, Shield } from 'lucide-react';
 
 export const ProfilePage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const updateUser = useUpdateUser();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    username: user?.username || '',
     email: user?.email || '',
     displayName: user?.displayName || '',
     avatarId: user?.avatarId || '',
@@ -29,7 +28,10 @@ export const ProfilePage: React.FC = () => {
         id: user.id,
         updates: formData
       });
-      
+
+      // Refresh user data in AuthContext
+      await refreshUser();
+
       setIsEditing(false);
       showToast.success('Perfil atualizado com sucesso!');
     } catch (error) {
@@ -40,7 +42,6 @@ export const ProfilePage: React.FC = () => {
 
   const handleCancel = () => {
     setFormData({
-      username: user?.username || '',
       email: user?.email || '',
       displayName: user?.displayName || '',
       avatarId: user?.avatarId || '',
@@ -103,17 +104,7 @@ export const ProfilePage: React.FC = () => {
         {isEditing ? (
           <form onSubmit={handleSubmit} className="space-y-6">
             <Input
-              label="Nome de Usuário (login)"
-              value={formData.username}
-              onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-              placeholder="Digite seu nome de usuário"
-              required
-              disabled
-              className="bg-gray-50"
-            />
-            
-            <Input
-              label="Email"
+              label="Email (usado para login)"
               type="email"
               value={formData.email}
               onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
@@ -176,7 +167,7 @@ export const ProfilePage: React.FC = () => {
                 <User className="h-5 w-5 text-gray-400" />
                 <div>
                   <p className="text-sm font-medium text-gray-500">Nome de Exibição</p>
-                  <p className="font-semibold text-gray-900">{user.displayName || user.username}</p>
+                  <p className="font-semibold text-gray-900">{user.displayName}</p>
                 </div>
               </div>
               

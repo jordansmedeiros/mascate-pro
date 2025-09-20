@@ -42,7 +42,7 @@ export const UsersPage: React.FC = () => {
     active: true
   });
 
-  const [resetResult, setResetResult] = useState<{ username: string; newPassword: string } | null>(null);
+  const [resetResult, setResetResult] = useState<{ email: string; newPassword: string } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +59,6 @@ export const UsersPage: React.FC = () => {
       }
       
       setFormData({
-        username: '',
         email: '',
         displayName: '',
         avatarId: AVAILABLE_AVATARS[0].id,
@@ -76,9 +75,8 @@ export const UsersPage: React.FC = () => {
   const handleEdit = (user: User) => {
     setEditingUser(user);
     setFormData({
-      username: user.username,
-      email: user.email || '',
-      displayName: user.displayName || '',
+      email: user.email,
+      displayName: user.displayName,
       avatarId: user.avatarId || AVAILABLE_AVATARS[0].id,
       role: user.role,
       active: user.active
@@ -88,7 +86,7 @@ export const UsersPage: React.FC = () => {
 
   const handleDelete = async (user: User) => {
     const confirmed = await showConfirmToast({
-      message: `Tem certeza que deseja desativar o usuário "${user.displayName || user.username}"?`,
+      message: `Tem certeza que deseja desativar o usuário "${user.displayName}"?`,
       confirmText: 'Desativar',
       cancelText: 'Cancelar',
       type: 'danger'
@@ -119,7 +117,7 @@ export const UsersPage: React.FC = () => {
 
   const handleResetPassword = async (user: User) => {
     const confirmed = await showConfirmToast({
-      message: `Resetar a senha do usuário "${user.displayName || user.username}"? Uma nova senha será gerada.`,
+      message: `Resetar a senha do usuário "${user.displayName}"? Uma nova senha será gerada.`,
       confirmText: 'Resetar',
       cancelText: 'Cancelar',
       type: 'warning'
@@ -172,7 +170,6 @@ export const UsersPage: React.FC = () => {
           onClick={() => {
             setEditingUser(null);
             setFormData({
-              username: '',
               email: '',
               displayName: '',
               avatarId: AVAILABLE_AVATARS[0].id,
@@ -194,7 +191,7 @@ export const UsersPage: React.FC = () => {
           <div className="text-center p-4">
             <h3 className="font-bold text-green-800 mb-2">🔐 Senha Resetada!</h3>
             <p className="text-green-700 mb-2">
-              Nova senha para <strong>{resetResult.username}</strong>:
+              Nova senha para <strong>{resetResult.email}</strong>:
             </p>
             <div className="bg-white p-3 rounded border-2 border-green-300 font-mono text-lg">
               {resetResult.newPassword}
@@ -250,15 +247,7 @@ export const UsersPage: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="Nome de Usuário (login) *"
-                value={formData.username}
-                onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                placeholder="Ex: joao.silva"
-                required
-              />
-              
-              <Input
-                label="Email *"
+                label="Email (usado para login) *"
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
@@ -360,10 +349,10 @@ export const UsersPage: React.FC = () => {
                   </div>
                   <div className="flex-1">
                     <h3 className={`font-bold text-lg truncate ${!user.active ? 'text-gray-500' : 'text-gray-900'}`}>
-                      {user.displayName || user.username}
+                      {user.displayName}
                     </h3>
                     <p className={`text-sm truncate ${!user.active ? 'text-gray-400' : 'text-gray-600'}`}>
-                      @{user.username}
+                      {user.email}
                     </p>
                   </div>
                   {!user.active && (
