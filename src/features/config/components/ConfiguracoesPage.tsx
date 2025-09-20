@@ -38,7 +38,28 @@ export const ConfiguracoesPage: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   // System information states
-  const [systemInfo, setSystemInfo] = useState<any>(null);
+  const [systemInfo, setSystemInfo] = useState<{
+    version: string;
+    database: {
+      connected: boolean;
+      tables: number;
+      records: number;
+      type: string;
+      version: string;
+      size: string;
+    };
+    storage: { used: string; available: string };
+    users: number;
+    categories: number;
+    products: number;
+    environment: string;
+    tables: {
+      users_count: number;
+      products_count: number;
+      categories_count: number;
+    };
+    lastUpdate: string;
+  } | null>(null);
   const [loadingSystemInfo, setLoadingSystemInfo] = useState(false);
 
   // Category management states
@@ -320,7 +341,7 @@ export const ConfiguracoesPage: React.FC = () => {
                     <div className="flex items-center space-x-3">
                       <div
                         className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
-                        style={{ backgroundColor: category.color || '#3b82f6' }}
+                        style={{ backgroundColor: category.color || '#3b82f6' } as React.CSSProperties}
                       >
                         {category.icon || category.name.charAt(0).toUpperCase()}
                       </div>
@@ -478,6 +499,9 @@ export const ConfiguracoesPage: React.FC = () => {
             </Button>
             
             <div>
+              <label htmlFor="restore-backup" className="sr-only">
+                Selecionar arquivo de backup para restaurar
+              </label>
               <input
                 type="file"
                 accept=".json"
@@ -485,6 +509,7 @@ export const ConfiguracoesPage: React.FC = () => {
                 className="hidden"
                 id="restore-backup"
                 disabled={isProcessing}
+                aria-label="Selecionar arquivo de backup para restaurar"
               />
               <Button
                 onClick={() => document.getElementById('restore-backup')?.click()}
@@ -752,13 +777,15 @@ export const ConfiguracoesPage: React.FC = () => {
           />
 
           <div>
-            <label className="form-label">Cor</label>
+            <label htmlFor="category-color" className="form-label">Cor</label>
             <div className="flex items-center space-x-3">
               <input
+                id="category-color"
                 type="color"
                 value={categoryForm.color}
                 onChange={(e) => setCategoryForm(prev => ({ ...prev, color: e.target.value }))}
                 className="w-12 h-10 border border-gray-300 rounded cursor-pointer"
+                aria-label="Selecionar cor da categoria"
               />
               <span className="text-sm text-gray-600">{categoryForm.color}</span>
             </div>
