@@ -103,7 +103,7 @@ app.post('/api/auth', async (req, res) => {
 
     // Buscar usuário por email
     const userResult = await client.query(`
-      SELECT id, username, email, display_name as "displayName", avatar_id as "avatarId",
+      SELECT id, email, display_name as "displayName", avatar_id as "avatarId",
              role, active, password_hash, created_at, updated_at
       FROM mascate_pro.users
       WHERE email = $1 AND active = true
@@ -158,7 +158,6 @@ app.post('/api/auth', async (req, res) => {
     // Retornar dados do usuário (sem senha)
     const userResponse = {
       id: user.id,
-      username: user.username,
       email: user.email,
       displayName: user.displayName,
       avatarId: user.avatarId,
@@ -303,9 +302,17 @@ app.put('/api/users', async (req, res) => {
     const values = [];
     let valueIndex = 1;
 
+    // Map camelCase to snake_case for database fields
+    const fieldMap = {
+      'displayName': 'display_name',
+      'avatarId': 'avatar_id',
+      'lastLogin': 'last_login'
+    };
+
     for (const [key, value] of Object.entries(updates)) {
-      if (['email', 'display_name', 'avatar_id', 'role', 'active', 'last_login'].includes(key)) {
-        updateFields.push(`${key} = $${valueIndex}`);
+      const dbField = fieldMap[key] || key; // Convert camelCase to snake_case
+      if (['email', 'display_name', 'avatar_id', 'role', 'active', 'last_login'].includes(dbField)) {
+        updateFields.push(`${dbField} = $${valueIndex}`);
         values.push(value);
         valueIndex++;
       }
@@ -322,7 +329,7 @@ app.put('/api/users', async (req, res) => {
       UPDATE mascate_pro.users
       SET ${updateFields.join(', ')}
       WHERE id = $${valueIndex}
-      RETURNING id, username, email, display_name as "displayName", avatar_id as "avatarId",
+      RETURNING id, email, display_name as "displayName", avatar_id as "avatarId",
                 role, active, last_login, created_at, updated_at
     `, values);
 
