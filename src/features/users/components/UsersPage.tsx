@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { AVAILABLE_AVATARS, getAvatarIcon } from '@/constants/avatars';
-import { showToast, showConfirmToast } from '@/components/ui/Toast';
+import { showToast, showConfirmToast } from '@/utils/toast';
 import { Users, Plus, Edit3, Trash2, Key, UserCheck, UserX } from 'lucide-react';
 import { 
   useUsers, 

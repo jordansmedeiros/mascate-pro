@@ -3,8 +3,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
-import { useAuth } from '@/features/auth/context/AuthContext';
-import { showToast, showConfirmToast } from '@/components/ui/Toast';
+import { useAuth } from "@/features/auth/hooks/useAuth"
+import { showToast, showConfirmToast } from '@/utils/toast';
 import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '@/features/categories/hooks/useCategories';
 import { getDatabase } from '@/services/db';
 import type { Category, CategoryFormData } from '@/types';

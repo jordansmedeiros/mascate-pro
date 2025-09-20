@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryProvider } from '@/app/providers/QueryProvider';
-import { AuthProvider, useAuth } from '@/features/auth/context/AuthContext';
+import { AuthProvider } from "@/features/auth/context/AuthContext"; import { useAuth } from "@/features/auth/hooks/useAuth";
 import { LoginForm } from '@/features/auth/components/LoginForm';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Dashboard } from '@/features/dashboard/components/Dashboard';

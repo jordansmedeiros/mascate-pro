@@ -58,7 +58,7 @@ export const LogsPage: React.FC = () => {
       // Rows
       ...logsData.logs.map(log => [
         new Date(log.created_at).toLocaleString('pt-BR'),
-        log.user?.username || 'N/A',
+        log.user?.displayName || 'N/A',
         log.action,
         `"${log.details}"`,
         log.ip_address || 'N/A'
@@ -169,6 +169,7 @@ export const LogsPage: React.FC = () => {
                 Usuário
               </label>
               <select
+                aria-label="Filtrar por usuário"
                 className="form-input"
                 value={filters.userId || ''}
                 onChange={(e) => setFilters(prev => ({ 
@@ -180,7 +181,7 @@ export const LogsPage: React.FC = () => {
                 <option value="">Todos os usuários</option>
                 {users?.map(user => (
                   <option key={user.id} value={user.id}>
-                    {user.username} ({user.role})
+                    {user.displayName} ({user.role})
                   </option>
                 ))}
               </select>
@@ -193,6 +194,7 @@ export const LogsPage: React.FC = () => {
                 Tipo de Ação
               </label>
               <select
+                aria-label="Filtrar por tipo de ação"
                 className="form-input"
                 value={filters.action || ''}
                 onChange={(e) => setFilters(prev => ({ 
@@ -270,7 +272,7 @@ export const LogsPage: React.FC = () => {
                     {formatActionName(log.action)}
                   </span>
                   <span className="text-sm text-gray-500">
-                    {log.user?.username || 'Usuário desconhecido'}
+                    {log.user?.displayName || 'Usuário desconhecido'}
                   </span>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                     log.user?.role === 'superadmin' ? 'bg-red-100 text-red-800' :
@@ -381,7 +383,7 @@ export const LogsPage: React.FC = () => {
                     {index + 1}
                   </div>
                   <div>
-                    <div className="font-medium">{userActivity.user?.username}</div>
+                    <div className="font-medium">{userActivity.user?.displayName}</div>
                     <div className="text-sm text-gray-500">{userActivity.user?.role}</div>
                   </div>
                 </div>

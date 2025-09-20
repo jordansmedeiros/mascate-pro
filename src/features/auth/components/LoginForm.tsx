@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from "@/features/auth/hooks/useAuth"
 
 export const LoginForm: React.FC = () => {
   const { login, isLoading } = useAuth();

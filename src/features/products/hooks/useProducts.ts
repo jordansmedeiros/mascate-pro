@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getDatabase } from '@/services/db';
 import type { Product, ProductFormData } from '@/types';
-import { useAuth } from '@/features/auth/context/AuthContext';
+import { useAuth } from "@/features/auth/hooks/useAuth"
 
 // Query keys for React Query cache management
 export const productKeys = {

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getDatabase } from '@/services/db';
-import { useAuth } from '@/features/auth/context/AuthContext';
+import { useAuth } from "@/features/auth/hooks/useAuth"
 
 // Query keys for React Query cache management
 export const logKeys = {

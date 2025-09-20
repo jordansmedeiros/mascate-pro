@@ -14,19 +14,18 @@ export const EstoquePage: React.FC = () => {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Preparar dados
-  const activeProducts = products?.filter(p => p.active) || [];
-  
   // Filtrar produtos pela busca
   const filteredProducts = useMemo(() => {
+    const activeProducts = products?.filter(p => p.active) || [];
+
     if (!searchTerm.trim()) return activeProducts;
-    
+
     const term = searchTerm.toLowerCase();
-    return activeProducts.filter(product => 
+    return activeProducts.filter(product =>
       product.name.toLowerCase().includes(term) ||
       product.category.toLowerCase().includes(term)
     );
-  }, [activeProducts, searchTerm]);
+  }, [products, searchTerm]);
   
   const lowStockProducts = filteredProducts.filter(p => p.current_stock <= p.minimum_stock);
 

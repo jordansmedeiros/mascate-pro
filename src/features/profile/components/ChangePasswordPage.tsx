@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { useAuth } from '@/features/auth/context/AuthContext';
+import { useAuth } from "@/features/auth/hooks/useAuth"
 import { Key, Eye, EyeOff, Shield } from 'lucide-react';
 
 export const ChangePasswordPage: React.FC = () => {

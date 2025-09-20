@@ -8,7 +8,7 @@ import { Package, Plus, Edit3, Trash2 } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/features/products/hooks/useProducts';
 import { useCategories, useCreateCategory } from '@/features/categories/hooks/useCategories';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { showToast } from '@/components/ui/Toast';
+import { showToast } from '@/utils/toast';
 import type { Product, ProductFormData, CategoryFormData } from '@/types';
 import { formatCurrency, parseCurrencyValue, formatCurrencyInput } from '@/utils/currency';
 

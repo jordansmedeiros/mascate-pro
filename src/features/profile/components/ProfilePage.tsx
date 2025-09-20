@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { useAuth } from '@/features/auth/context/AuthContext';
+import { useAuth } from "@/features/auth/hooks/useAuth"
 import { useUpdateUser } from '@/features/users/hooks/useUsers';
 import { AVAILABLE_AVATARS, getAvatarIcon } from '@/constants/avatars';
-import { showToast } from '@/components/ui/Toast';
+import { showToast } from '@/utils/toast';
 import { User, Mail, Shield } from 'lucide-react';
 
 export const ProfilePage: React.FC = () => {

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '@/features/auth/context/AuthContext';
+import { useAuth } from "@/features/auth/hooks/useAuth"
 import { getAvatarIcon } from '@/constants/avatars';
 import {
   LayoutDashboard,

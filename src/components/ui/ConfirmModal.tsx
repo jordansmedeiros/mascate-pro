@@ -69,10 +69,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
       onClick={handleBackdropClick}
     >
       <div
-        className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full transform transition-all"
-        style={{
-          animation: 'modalSlideIn 0.2s ease-out'
-        }}
+        className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full transform transition-all animate-modal-slide-in"
       >
         <div className="flex items-start p-5">
           <div className="flex-shrink-0 mr-4 mt-0.5">
@@ -90,6 +87,8 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             onClick={onClose}
             className="ml-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
             disabled={loading}
+            aria-label="Fechar modal"
+            title="Fechar"
           >
             <X className="w-5 h-5" />
           </button>
