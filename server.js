@@ -4,6 +4,10 @@ import bcrypt from 'bcryptjs';
 import pkg from 'pg';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+// Carrega as variáveis de ambiente do arquivo .env
+dotenv.config();
 
 const { Pool } = pkg;
 
@@ -15,9 +19,11 @@ const __dirname = path.dirname(__filename);
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
 
-// Configuração SSL para conexão remota em desenvolvimento
-const sslConfig = isDevelopment && process.env.POSTGRES_SSL === 'true' ? {
-  rejectUnauthorized: false // Para desenvolvimento, aceita certificados auto-assinados
+// Configuração SSL - usa SSL para conexões remotas (desenvolvimento com host externo)
+// Em produção no CapRover não precisa de SSL (conexão interna)
+const sslConfig = process.env.POSTGRES_SSL === 'true' ? {
+  rejectUnauthorized: false, // Aceita certificados auto-assinados
+  ssl: true
 } : false;
 
 // Configuração do pool PostgreSQL para o servidor Express
@@ -71,7 +77,19 @@ app.get('/api/health', (req, res) => {
 
 // Auth endpoint
 app.post('/api/auth', async (req, res) => {
-  const client = await pool.connect();
+  console.log('Auth request received:', req.body.email);
+
+  let client;
+  try {
+    client = await pool.connect();
+    console.log('Database connection successful');
+  } catch (dbError) {
+    console.error('Database connection error:', dbError);
+    return res.status(500).json({
+      success: false,
+      error: 'Erro ao conectar ao banco de dados'
+    });
+  }
 
   try {
     const { email, password } = req.body;
@@ -168,7 +186,18 @@ app.post('/api/auth', async (req, res) => {
 
 // Users endpoint
 app.get('/api/users', async (req, res) => {
-  const client = await pool.connect();
+  console.log('GET /api/users request received');
+
+  let client;
+  try {
+    client = await pool.connect();
+    console.log('Database connection successful for users endpoint');
+  } catch (dbError) {
+    console.error('Database connection error for users endpoint:', dbError);
+    return res.status(500).json({
+      error: 'Erro ao conectar ao banco de dados'
+    });
+  }
 
   try {
     const { id, email } = req.query;

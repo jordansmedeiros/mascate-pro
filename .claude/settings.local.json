@@ -21,7 +21,11 @@
       "Bash(git add:*)",
       "Bash(git push:*)",
       "Bash(NODE_ENV=production node server.js)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(nslookup:*)",
+      "Bash(timeout:*)",
+      "Bash(findstr:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []
