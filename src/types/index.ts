@@ -1,7 +1,6 @@
 // User and Authentication Types
 export interface User {
   id: string;
-  username: string;
   email: string;
   displayName: string;
   avatarId?: string;
@@ -18,6 +17,26 @@ export interface AuthSession {
   user: User;
   token: string;
   expires_at: string;
+}
+
+// Category Types
+export interface Category {
+  id: string;
+  name: string;
+  description?: string;
+  icon?: string;
+  color?: string;
+  active: boolean;
+  created_at: string;
+  updated_at?: string;
+  created_by: string;
+}
+
+export interface CategoryFormData {
+  name: string;
+  description?: string;
+  icon?: string;
+  color?: string;
 }
 
 // Product Types
@@ -159,6 +178,13 @@ export interface LogsQueryParams {
   offset?: number;
 }
 
+export interface CategoriesQueryParams {
+  search?: string;
+  active?: boolean;
+  limit?: number;
+  offset?: number;
+}
+
 // UI State Types
 export interface UIState {
   sidebarOpen: boolean;
@@ -167,9 +193,10 @@ export interface UIState {
   loading: boolean;
 }
 
-// Database Schema Types (for SQLite)
+// Database Schema Types (for PostgreSQL)
 export interface DBSchema {
   users: User;
+  categories: Category;
   products: Product;
   stock_movements: StockMovement;
   activity_logs: ActivityLog;

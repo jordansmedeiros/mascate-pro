@@ -27,6 +27,20 @@ CREATE TABLE mascate_pro.users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Categories table
+CREATE TABLE mascate_pro.categories (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(100) UNIQUE NOT NULL,
+    description TEXT,
+    icon VARCHAR(50),
+    color VARCHAR(20),
+    active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID NOT NULL,
+    FOREIGN KEY (created_by) REFERENCES mascate_pro.users(id)
+);
+
 -- Products table
 CREATE TABLE mascate_pro.products (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -72,10 +86,26 @@ CREATE TABLE mascate_pro.activity_logs (
     FOREIGN KEY (user_id) REFERENCES mascate_pro.users(id)
 );
 
+-- Configuration table
+CREATE TABLE mascate_pro.configurations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    key VARCHAR(100) UNIQUE NOT NULL,
+    value JSONB NOT NULL,
+    description TEXT,
+    active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID NOT NULL,
+    FOREIGN KEY (created_by) REFERENCES mascate_pro.users(id)
+);
+
 -- Create indexes for better performance
 CREATE INDEX idx_users_email ON mascate_pro.users(email);
 CREATE INDEX idx_users_username ON mascate_pro.users(username);
 CREATE INDEX idx_users_active ON mascate_pro.users(active);
+
+CREATE INDEX idx_categories_name ON mascate_pro.categories(name);
+CREATE INDEX idx_categories_active ON mascate_pro.categories(active);
 
 CREATE INDEX idx_products_name ON mascate_pro.products(name);
 CREATE INDEX idx_products_category ON mascate_pro.products(category);
@@ -91,6 +121,9 @@ CREATE INDEX idx_activity_logs_user_id ON mascate_pro.activity_logs(user_id);
 CREATE INDEX idx_activity_logs_action ON mascate_pro.activity_logs(action);
 CREATE INDEX idx_activity_logs_created_at ON mascate_pro.activity_logs(created_at);
 
+CREATE INDEX idx_configurations_key ON mascate_pro.configurations(key);
+CREATE INDEX idx_configurations_active ON mascate_pro.configurations(active);
+
 -- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION mascate_pro.update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -104,13 +137,31 @@ $$ language 'plpgsql';
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON mascate_pro.users
     FOR EACH ROW EXECUTE FUNCTION mascate_pro.update_updated_at_column();
 
+CREATE TRIGGER update_categories_updated_at BEFORE UPDATE ON mascate_pro.categories
+    FOR EACH ROW EXECUTE FUNCTION mascate_pro.update_updated_at_column();
+
 CREATE TRIGGER update_products_updated_at BEFORE UPDATE ON mascate_pro.products
+    FOR EACH ROW EXECUTE FUNCTION mascate_pro.update_updated_at_column();
+
+CREATE TRIGGER update_configurations_updated_at BEFORE UPDATE ON mascate_pro.configurations
     FOR EACH ROW EXECUTE FUNCTION mascate_pro.update_updated_at_column();
 
 -- Insert default admin user
 -- Password: admin123 (hashed with bcrypt)
 INSERT INTO mascate_pro.users (username, email, display_name, role, password_hash) VALUES
 ('admin', 'admin@mascate.com', 'Administrador', 'superadmin', '$2b$10$rPF4cVJL8tHQbGH3kQJhtu7Fv9Jtt6RKJjJTQCf5pC.Wh2/9Dx.Nm');
+
+-- Insert default categories
+INSERT INTO mascate_pro.categories (name, description, icon, color, created_by) VALUES
+('doce', 'Produtos doces como balas, chocolates e gomas', '🍫', '#f59e0b', (SELECT id FROM mascate_pro.users WHERE email = 'admin@mascate.com')),
+('fumo', 'Produtos relacionados ao fumo como sedas e isqueiros', '🚬', '#6b7280', (SELECT id FROM mascate_pro.users WHERE email = 'admin@mascate.com')),
+('bebida', 'Bebidas em geral incluindo refrigerantes e águas', '🥤', '#3b82f6', (SELECT id FROM mascate_pro.users WHERE email = 'admin@mascate.com')),
+('outros', 'Outros produtos diversos não categorizados', '📦', '#8b5cf6', (SELECT id FROM mascate_pro.users WHERE email = 'admin@mascate.com'));
+
+-- Insert default business configurations
+INSERT INTO mascate_pro.configurations (key, value, description, created_by) VALUES
+('business_rules', '{"lowStockThreshold": 10, "criticalStockThreshold": 5, "autoReorderEnabled": false, "notificationsEnabled": true, "workingHours": {"start": "18:00", "end": "04:00"}, "maxDailyStock": 1000}', 'Configurações de regras de negócio e alertas', (SELECT id FROM mascate_pro.users WHERE email = 'admin@mascate.com')),
+('backup_config', '{"autoBackupEnabled": true, "backupInterval": "daily", "maxBackups": 30, "lastBackup": null}', 'Configurações de backup automático', (SELECT id FROM mascate_pro.users WHERE email = 'admin@mascate.com'));
 
 -- Insert sample categories and products
 INSERT INTO mascate_pro.products (name, category, unit, packaging, purchase_price, sale_price, current_stock, minimum_stock, created_by) VALUES

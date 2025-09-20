@@ -31,40 +31,51 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const checkExistingSession = async () => {
       try {
+        console.log('🔍 AuthContext: Verificando sessão existente...');
         const savedUser = localStorage.getItem('mascate_current_user');
+
         if (savedUser) {
+          console.log('📱 AuthContext: Sessão encontrada no localStorage');
           const userData = JSON.parse(savedUser);
-          
+          console.log('👤 AuthContext: Dados do usuário:', { id: userData.id, email: userData.email });
+
           // Verify user still exists and is active
           const db = await getDatabase();
+          console.log('🔗 AuthContext: Conectado ao banco, verificando usuário...');
           const currentUser = await db.getUserById(userData.id);
-          
+
           if (currentUser && currentUser.active) {
+            console.log('✅ AuthContext: Usuário válido encontrado, restaurando sessão');
+
             // Update last login
             await db.updateUser(currentUser.id, {
               last_login: new Date().toISOString(),
             });
-            
+
             // Log the session restoration
             await db.createActivityLog({
               user_id: currentUser.id,
               action: 'SESSION_RESTORED',
-        details: `Sessão restaurada para usuário ${currentUser.displayName} (${currentUser.email})`,
+              details: `Sessão restaurada para usuário ${currentUser.displayName} (${currentUser.email})`,
               ip_address: '127.0.0.1',
               user_agent: navigator.userAgent,
             });
-            
+
             setUser(currentUser);
+            console.log('🎉 AuthContext: Sessão restaurada com sucesso!');
           } else {
-            // User no longer exists or is inactive
+            console.log('❌ AuthContext: Usuário não encontrado ou inativo, removendo sessão');
             localStorage.removeItem('mascate_current_user');
           }
+        } else {
+          console.log('📭 AuthContext: Nenhuma sessão encontrada no localStorage');
         }
       } catch (error) {
-        console.error('Error checking existing session:', error);
+        console.error('❌ AuthContext: Erro ao verificar sessão existente:', error);
         localStorage.removeItem('mascate_current_user');
       } finally {
         setIsLoading(false);
+        console.log('⏹️ AuthContext: Verificação de sessão concluída');
       }
     };
 
@@ -74,22 +85,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
       setIsLoading(true);
+      console.log('🔐 AuthContext: Iniciando login para:', email);
       const db = await getDatabase();
-      
+
       // Use the new authentication endpoint with proper password hashing
       const result = await db.login(email, password);
 
       if (result.success && result.user) {
+        console.log('✅ AuthContext: Login bem-sucedido, salvando sessão');
         // Save to localStorage and state
         localStorage.setItem('mascate_current_user', JSON.stringify(result.user));
         setUser(result.user);
+        console.log('💾 AuthContext: Sessão salva no localStorage');
       } else {
+        console.log('❌ AuthContext: Falha no login:', result.error);
         return { success: false, error: result.error || 'Credenciais inválidas' };
       }
-      
+
       return { success: true };
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('❌ AuthContext: Erro no login:', error);
       return { success: false, error: 'Erro interno do sistema. Tente novamente.' };
     } finally {
       setIsLoading(false);

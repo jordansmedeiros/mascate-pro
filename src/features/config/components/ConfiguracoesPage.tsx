@@ -2,19 +2,27 @@ import React, { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Modal } from '@/components/ui/Modal';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { showToast, showConfirmToast } from '@/components/ui/Toast';
-import { 
-  Database, 
-  Download, 
-  Upload, 
-  AlertTriangle, 
-  Shield, 
+import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '@/features/categories/hooks/useCategories';
+import { getDatabase } from '@/services/db';
+import type { Category, CategoryFormData } from '@/types';
+import {
+  Database,
+  Download,
+  Upload,
+  AlertTriangle,
+  Shield,
   Package,
   TrendingDown,
   FileText,
   HardDrive,
-  Calendar
+  Calendar,
+  Tags,
+  Plus,
+  Edit3,
+  Trash2
 } from 'lucide-react';
 
 interface ConfigSection {
@@ -26,8 +34,26 @@ interface ConfigSection {
 
 export const ConfiguracoesPage: React.FC = () => {
   const { user } = useAuth();
-  const [activeSection, setActiveSection] = useState<string>('regras_de_negocio');
+  const [activeSection, setActiveSection] = useState<string>('categorias');
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // System information states
+  const [systemInfo, setSystemInfo] = useState<any>(null);
+  const [loadingSystemInfo, setLoadingSystemInfo] = useState(false);
+
+  // Category management states
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const createCategory = useCreateCategory();
+  const updateCategory = useUpdateCategory();
+  const deleteCategory = useDeleteCategory();
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [categoryForm, setCategoryForm] = useState<CategoryFormData>({
+    name: '',
+    description: '',
+    icon: '',
+    color: '#3b82f6',
+  });
 
   // Configurações de negócio
   const [businessConfig, setBusinessConfig] = useState({
@@ -50,6 +76,86 @@ export const ConfiguracoesPage: React.FC = () => {
     lastBackup: new Date().toISOString()
   });
 
+  // Load system information
+  const loadSystemInfo = async () => {
+    setLoadingSystemInfo(true);
+    try {
+      const db = await getDatabase();
+      const info = await db.getSystemInfo();
+      setSystemInfo(info);
+    } catch (error) {
+      console.error('Erro ao carregar informações do sistema:', error);
+      showToast.error('Erro ao carregar informações do sistema');
+    } finally {
+      setLoadingSystemInfo(false);
+    }
+  };
+
+  // Load system info on component mount
+  React.useEffect(() => {
+    loadSystemInfo();
+  }, []);
+
+  // Category management functions
+  const handleCategorySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      if (editingCategory) {
+        await updateCategory.mutateAsync({
+          id: editingCategory.id,
+          updates: categoryForm
+        });
+        showToast.success('Categoria atualizada com sucesso!');
+      } else {
+        await createCategory.mutateAsync(categoryForm);
+        showToast.success('Categoria criada com sucesso!');
+      }
+
+      setShowCategoryModal(false);
+      setEditingCategory(null);
+      setCategoryForm({
+        name: '',
+        description: '',
+        icon: '',
+        color: '#3b82f6',
+      });
+    } catch (error) {
+      console.error('Erro ao salvar categoria:', error);
+      showToast.error('Erro ao salvar categoria. Tente novamente.');
+    }
+  };
+
+  const handleEditCategory = (category: Category) => {
+    setEditingCategory(category);
+    setCategoryForm({
+      name: category.name,
+      description: category.description || '',
+      icon: category.icon || '',
+      color: category.color || '#3b82f6',
+    });
+    setShowCategoryModal(true);
+  };
+
+  const handleDeleteCategory = async (category: Category) => {
+    const confirmed = await showConfirmToast({
+      message: `Tem certeza que deseja excluir a categoria "${category.name}"?`,
+      confirmText: 'Sim, excluir',
+      cancelText: 'Cancelar',
+      type: 'danger'
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await deleteCategory.mutateAsync(category.id);
+      showToast.success('Categoria excluída com sucesso!');
+    } catch (error) {
+      console.error('Erro ao excluir categoria:', error);
+      showToast.error('Erro ao excluir categoria. Verifique se não há produtos usando esta categoria.');
+    }
+  };
+
   const handleBusinessConfigSave = async () => {
     setIsProcessing(true);
     try {
@@ -71,22 +177,11 @@ export const ConfiguracoesPage: React.FC = () => {
   const handleBackupNow = async () => {
     setIsProcessing(true);
     try {
-      // Simular processo de backup
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Criar backup simulado
-      const backupData = {
-        timestamp: new Date().toISOString(),
-        version: '1.0.0',
-        tables: ['products', 'stock', 'sales', 'users', 'logs'],
-        size: '2.3 MB'
-      };
-      
-      // Simular download do backup
-      const blob = new Blob([JSON.stringify(backupData, null, 2)], { 
-        type: 'application/json' 
-      });
-      const url = URL.createObjectURL(blob);
+      const db = await getDatabase();
+      const backupBlob = await db.createBackup();
+
+      // Create download link
+      const url = URL.createObjectURL(backupBlob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `mascate-backup-${new Date().toISOString().split('T')[0]}.json`;
@@ -94,12 +189,12 @@ export const ConfiguracoesPage: React.FC = () => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      
+
       setBackupConfig(prev => ({
         ...prev,
         lastBackup: new Date().toISOString()
       }));
-      
+
       showToast.success('Backup criado e baixado com sucesso!');
     } catch (error) {
       console.error('Erro ao criar backup:', error);
@@ -131,13 +226,23 @@ export const ConfiguracoesPage: React.FC = () => {
     }
   };
 
-  const handleExportData = async (format: 'csv' | 'excel' | 'pdf') => {
+  const handleExportData = async (format: 'csv' | 'json') => {
     setIsProcessing(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Simular exportação
-      const filename = `mascate-relatorio-${new Date().toISOString().split('T')[0]}.${format}`;
+      const db = await getDatabase();
+      const exportBlob = await db.exportData(format);
+
+      // Create download link
+      const url = URL.createObjectURL(exportBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `mascate-export-${new Date().toISOString().split('T')[0]}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      const filename = `mascate-export-${new Date().toISOString().split('T')[0]}.${format}`;
       showToast.success(`Relatório exportado: ${filename}`);
     } catch (error) {
       console.error('Erro ao exportar dados:', error);
@@ -147,20 +252,21 @@ export const ConfiguracoesPage: React.FC = () => {
     }
   };
 
-  const handleClearData = async (dataType: string) => {
+  const handleClearData = async (dataType: 'logs' | 'movements', description: string) => {
     const confirmed = await showConfirmToast({
-      message: `⚠️ ATENÇÃO: Esta ação irá remover permanentemente todos os dados de ${dataType}.\n\nEsta ação NÃO pode ser desfeita!\n\nTem certeza que deseja continuar?`,
+      message: `⚠️ ATENÇÃO: Esta ação irá remover permanentemente todos os dados de ${description}.\n\nEsta ação NÃO pode ser desfeita!\n\nTem certeza que deseja continuar?`,
       confirmText: 'Sim, remover',
       cancelText: 'Cancelar',
       type: 'danger'
     });
-    
+
     if (!confirmed) return;
 
     setIsProcessing(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      showToast.success(`Dados de ${dataType} removidos com sucesso.`);
+      const db = await getDatabase();
+      const result = await db.cleanupData(dataType);
+      showToast.success(result.message || `Dados de ${description} removidos com sucesso.`);
     } catch (error) {
       console.error('Erro ao limpar dados:', error);
       showToast.error('Erro ao limpar dados. Tente novamente.');
@@ -170,6 +276,99 @@ export const ConfiguracoesPage: React.FC = () => {
   };
 
   const sections: ConfigSection[] = [
+    {
+      title: 'Categorias',
+      description: 'Gerencie categorias de produtos',
+      icon: <Tags className="h-6 w-6" />,
+      component: (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <p className="text-gray-600">
+              Adicione e gerencie categorias para organizar seus produtos.
+            </p>
+            <Button
+              onClick={() => {
+                setEditingCategory(null);
+                setCategoryForm({
+                  name: '',
+                  description: '',
+                  icon: '',
+                  color: '#3b82f6',
+                });
+                setShowCategoryModal(true);
+              }}
+              variant="primary"
+              className="bg-mascate-green text-white hover:bg-green-700 border-mascate-green"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Categoria
+            </Button>
+          </div>
+
+          {categoriesLoading ? (
+            <div className="text-center py-8">
+              <div className="text-gray-500">Carregando categorias...</div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {categories?.map((category) => (
+                <div
+                  key={category.id}
+                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
+                        style={{ backgroundColor: category.color || '#3b82f6' }}
+                      >
+                        {category.icon || category.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900">{category.name}</h4>
+                        {category.description && (
+                          <p className="text-sm text-gray-500">{category.description}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex space-x-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditCategory(category)}
+                        className="p-1 hover:bg-blue-100"
+                      >
+                        <Edit3 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteCategory(category)}
+                        className="p-1 hover:bg-red-100"
+                      >
+                        <Trash2 className="h-4 w-4 text-red-600" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {(!categories || categories.length === 0) && !categoriesLoading && (
+            <div className="text-center py-12">
+              <Tags className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                Nenhuma categoria cadastrada
+              </h3>
+              <p className="text-gray-500 mb-4">
+                Clique em "Nova Categoria" para começar
+              </p>
+            </div>
+          )}
+        </div>
+      )
+    },
     {
       title: 'Regras de Negócio',
       description: 'Configure alertas de estoque e funcionamento',
@@ -332,25 +531,14 @@ export const ConfiguracoesPage: React.FC = () => {
             </Button>
             
             <Button
-              onClick={() => handleExportData('excel')}
+              onClick={() => handleExportData('json')}
               disabled={isProcessing}
               variant="secondary"
               className="flex flex-col items-center p-6 h-auto space-y-3 bg-mascate-green text-white hover:bg-green-700 border-mascate-green shadow-lg transition-all duration-200 hover:shadow-xl"
             >
               <FileText className="h-10 w-10 text-mascate-yellow" />
-              <span className="font-bold text-base">Exportar Excel</span>
-              <span className="text-sm text-mascate-yellow/90 font-medium">Relatórios formatados</span>
-            </Button>
-            
-            <Button
-              onClick={() => handleExportData('pdf')}
-              disabled={isProcessing}
-              variant="secondary"
-              className="flex flex-col items-center p-6 h-auto space-y-3 bg-mascate-green text-white hover:bg-green-700 border-mascate-green shadow-lg transition-all duration-200 hover:shadow-xl"
-            >
-              <FileText className="h-10 w-10 text-mascate-yellow" />
-              <span className="font-bold text-base">Exportar PDF</span>
-              <span className="text-sm text-mascate-yellow/90 font-medium">Relatórios finais</span>
+              <span className="font-bold text-base">Exportar JSON</span>
+              <span className="text-sm text-mascate-yellow/90 font-medium">Dados estruturados</span>
             </Button>
           </div>
           
@@ -386,7 +574,7 @@ export const ConfiguracoesPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Button
-              onClick={() => handleClearData('logs antigos')}
+              onClick={() => handleClearData('logs', 'logs antigos (>30 dias)')}
               disabled={isProcessing}
               variant="secondary"
               className="flex items-center space-x-2 bg-mascate-green text-white border-mascate-green hover:bg-green-700"
@@ -394,38 +582,71 @@ export const ConfiguracoesPage: React.FC = () => {
               <Calendar className="h-4 w-4" />
               <span>Limpar Logs Antigos</span>
             </Button>
-            
+
             <Button
-              onClick={() => handleClearData('dados de vendas')}
+              onClick={() => handleClearData('movements', 'movimentações antigas (>1 ano)')}
               disabled={isProcessing}
               variant="secondary"
               className="flex items-center space-x-2 bg-mascate-green text-white border-mascate-green hover:bg-green-700"
             >
               <TrendingDown className="h-4 w-4" />
-              <span>Limpar Dados de Vendas</span>
+              <span>Limpar Movimentações Antigas</span>
             </Button>
           </div>
 
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <h4 className="font-medium text-gray-800 mb-2">Informações do Sistema:</h4>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-gray-600">Versão:</span>
-                <span className="font-medium ml-2">1.0.0</span>
-              </div>
-              <div>
-                <span className="text-gray-600">Banco de Dados:</span>
-                <span className="font-medium ml-2">SQLite</span>
-              </div>
-              <div>
-                <span className="text-gray-600">Espaço Usado:</span>
-                <span className="font-medium ml-2">12.3 MB</span>
-              </div>
-              <div>
-                <span className="text-gray-600">Última Atualização:</span>
-                <span className="font-medium ml-2">{new Date().toLocaleDateString('pt-BR')}</span>
-              </div>
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-medium text-gray-800">Informações do Sistema:</h4>
+              <Button
+                onClick={loadSystemInfo}
+                disabled={loadingSystemInfo}
+                variant="ghost"
+                size="sm"
+                className="text-gray-600 hover:text-gray-800"
+              >
+                {loadingSystemInfo ? 'Carregando...' : 'Atualizar'}
+              </Button>
             </div>
+            {systemInfo ? (
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-600">Versão:</span>
+                  <span className="font-medium ml-2">{systemInfo.version}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Banco de Dados:</span>
+                  <span className="font-medium ml-2">{systemInfo.database.type} {systemInfo.database.version}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Espaço Usado:</span>
+                  <span className="font-medium ml-2">{systemInfo.database.size}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Ambiente:</span>
+                  <span className="font-medium ml-2 capitalize">{systemInfo.environment}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Usuários:</span>
+                  <span className="font-medium ml-2">{systemInfo.tables.users_count}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Produtos:</span>
+                  <span className="font-medium ml-2">{systemInfo.tables.products_count}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Categorias:</span>
+                  <span className="font-medium ml-2">{systemInfo.tables.categories_count}</span>
+                </div>
+                <div>
+                  <span className="text-gray-600">Última Atualização:</span>
+                  <span className="font-medium ml-2">{new Date(systemInfo.lastUpdate).toLocaleDateString('pt-BR')}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-4 text-gray-500">
+                {loadingSystemInfo ? 'Carregando informações...' : 'Erro ao carregar informações'}
+              </div>
+            )}
           </div>
         </div>
       )
@@ -485,6 +706,97 @@ export const ConfiguracoesPage: React.FC = () => {
           {currentSection.component}
         </Card>
       )}
+
+      {/* Modal para criar/editar categorias */}
+      <Modal
+        isOpen={showCategoryModal}
+        onClose={() => {
+          setShowCategoryModal(false);
+          setEditingCategory(null);
+          setCategoryForm({
+            name: '',
+            description: '',
+            icon: '',
+            color: '#3b82f6',
+          });
+        }}
+        title={editingCategory ? 'Editar Categoria' : 'Nova Categoria'}
+        size="md"
+      >
+        <form onSubmit={handleCategorySubmit} className="space-y-4">
+          <Input
+            label="Nome da Categoria *"
+            value={categoryForm.name}
+            onChange={(e) => setCategoryForm(prev => ({ ...prev, name: e.target.value }))}
+            placeholder="Ex: Eletrônicos, Roupas, Livros..."
+            required
+          />
+
+          <div>
+            <label className="form-label">Descrição</label>
+            <textarea
+              className="form-input"
+              value={categoryForm.description}
+              onChange={(e) => setCategoryForm(prev => ({ ...prev, description: e.target.value }))}
+              placeholder="Descrição opcional da categoria"
+              rows={3}
+            />
+          </div>
+
+          <Input
+            label="Ícone (Emoji)"
+            value={categoryForm.icon}
+            onChange={(e) => setCategoryForm(prev => ({ ...prev, icon: e.target.value }))}
+            placeholder="Ex: 📱, 👕, 📚..."
+            maxLength={10}
+          />
+
+          <div>
+            <label className="form-label">Cor</label>
+            <div className="flex items-center space-x-3">
+              <input
+                type="color"
+                value={categoryForm.color}
+                onChange={(e) => setCategoryForm(prev => ({ ...prev, color: e.target.value }))}
+                className="w-12 h-10 border border-gray-300 rounded cursor-pointer"
+              />
+              <span className="text-sm text-gray-600">{categoryForm.color}</span>
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                setShowCategoryModal(false);
+                setEditingCategory(null);
+                setCategoryForm({
+                  name: '',
+                  description: '',
+                  icon: '',
+                  color: '#3b82f6',
+                });
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={createCategory.isPending || updateCategory.isPending}
+              className="bg-mascate-green text-white hover:bg-green-700 border-mascate-green"
+            >
+              {createCategory.isPending || updateCategory.isPending
+                ? 'Salvando...'
+                : editingCategory
+                ? 'Atualizar'
+                : 'Criar'
+              }
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

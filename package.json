@@ -32,6 +32,7 @@
     "preview": "vite preview",
     "preview:prod": "vite build && vite preview --port 4173 --host",
     "test": "vitest",
+    "migrate": "node scripts/migrate-database.js",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "format": "prettier --write \"src/**/*.{ts,tsx,json,css,md}\"",

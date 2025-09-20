@@ -2,22 +2,30 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
+import { Modal } from '@/components/ui/Modal';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { Package, Plus, Edit3, Trash2 } from 'lucide-react';
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/features/products/hooks/useProducts';
+import { useCategories, useCreateCategory } from '@/features/categories/hooks/useCategories';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import type { Product, ProductFormData } from '@/types';
+import { showToast } from '@/components/ui/Toast';
+import type { Product, ProductFormData, CategoryFormData } from '@/types';
 
 export const ProdutosPage: React.FC = () => {
   const { data: products, isLoading } = useProducts();
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
+
+  // Categories
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const createCategory = useCreateCategory();
   
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState<ProductFormData>({
     name: '',
-    category: 'doce',
+    category: categories?.[0]?.name || 'doce',
     unit: 'unidade',
     packaging: '',
     purchase_price: 0,
@@ -25,6 +33,56 @@ export const ProdutosPage: React.FC = () => {
     minimum_stock: 10,
     current_stock: 0
   });
+
+  // Category modal states
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [newCategoryForm, setNewCategoryForm] = useState<CategoryFormData>({
+    name: '',
+    description: '',
+    icon: '',
+    color: '#3b82f6',
+  });
+
+  // Confirm modal states
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      category: categories?.[0]?.name || 'doce',
+      unit: 'unidade',
+      packaging: '',
+      purchase_price: 0,
+      sale_price: 0,
+      minimum_stock: 10,
+      current_stock: 0
+    });
+  };
+
+  const handleCreateCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const newCategory = await createCategory.mutateAsync(newCategoryForm);
+      showToast.success('Categoria criada com sucesso!');
+
+      // Set the new category as selected in the product form
+      setFormData(prev => ({ ...prev, category: newCategory.name }));
+
+      // Reset and close modal
+      setNewCategoryForm({
+        name: '',
+        description: '',
+        icon: '',
+        color: '#3b82f6',
+      });
+      setShowCategoryModal(false);
+    } catch (error) {
+      console.error('Erro ao criar categoria:', error);
+      showToast.error('Erro ao criar categoria. Tente novamente.');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,17 +97,8 @@ export const ProdutosPage: React.FC = () => {
       } else {
         await createProduct.mutateAsync(formData);
       }
-      
-      setFormData({
-        name: '',
-        category: 'doce',
-        unit: 'unidade', 
-        packaging: '',
-        purchase_price: 0,
-        sale_price: 0,
-        minimum_stock: 10,
-        current_stock: 0
-      });
+
+      resetForm();
       setShowForm(false);
     } catch (error) {
       console.error('Erro ao salvar produto:', error);
@@ -71,9 +120,26 @@ export const ProdutosPage: React.FC = () => {
     setShowForm(true);
   };
 
-  const handleDelete = async (product: Product) => {
-    if (confirm(`Tem certeza que deseja remover ${product.name}?`)) {
-      await deleteProduct.mutateAsync(product.id);
+  const handleDelete = (product: Product) => {
+    console.log('🗑️ Tentando excluir produto:', product);
+    setProductToDelete(product);
+    setShowConfirmModal(true);
+  };
+
+  const confirmDelete = async () => {
+    console.log('✅ Confirmando exclusão do produto:', productToDelete);
+    if (productToDelete) {
+      try {
+        console.log('📤 Enviando requisição de exclusão para ID:', productToDelete.id);
+        await deleteProduct.mutateAsync(productToDelete.id);
+        console.log('✅ Produto excluído com sucesso!');
+        setShowConfirmModal(false);
+        setProductToDelete(null);
+        // Toast é mostrado automaticamente pelo hook useDeleteProduct
+      } catch (error) {
+        console.error('❌ Erro ao excluir produto:', error);
+        // Erro é tratado no hook useDeleteProduct
+      }
     }
   };
 
@@ -93,16 +159,7 @@ export const ProdutosPage: React.FC = () => {
           variant="primary"
           onClick={() => {
             setEditingProduct(null);
-            setFormData({
-              name: '',
-              category: 'doce',
-              unit: 'unidade',
-              packaging: '',
-              purchase_price: 0,
-              sale_price: 0,
-              minimum_stock: 10,
-              current_stock: 0
-            });
+            resetForm();
             setShowForm(!showForm);
           }}
           className="bg-mascate-green text-white hover:bg-green-700 border-mascate-green shadow-md transition-all duration-200 hover:shadow-lg"
@@ -126,17 +183,47 @@ export const ProdutosPage: React.FC = () => {
             
             <div>
               <label className="form-label">Categoria *</label>
-              <select
-                className="form-input"
-                value={formData.category}
-                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                required
-              >
-                <option value="doce">🍫 Doce</option>
-                <option value="fumo">🚬 Fumo</option>
-                <option value="bebida">🥤 Bebida</option>
-                <option value="outros">📦 Outros</option>
-              </select>
+              <div className="flex items-center space-x-2">
+                <select
+                  className="form-input flex-1"
+                  value={formData.category}
+                  onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                  required
+                  disabled={categoriesLoading}
+                >
+                  {categoriesLoading ? (
+                    <option>Carregando categorias...</option>
+                  ) : (
+                    <>
+                      {categories?.map((category) => (
+                        <option key={category.id} value={category.name}>
+                          {category.icon ? `${category.icon} ` : ''}
+                          {category.name}
+                        </option>
+                      ))}
+                      {/* Fallback categories if no categories from API */}
+                      {(!categories || categories.length === 0) && (
+                        <>
+                          <option value="doce">🍫 Doce</option>
+                          <option value="fumo">🚬 Fumo</option>
+                          <option value="bebida">🥤 Bebida</option>
+                          <option value="outros">📦 Outros</option>
+                        </>
+                      )}
+                    </>
+                  )}
+                </select>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowCategoryModal(true)}
+                  className="px-3 py-2 border-2 border-dashed border-gray-300 hover:border-mascate-green hover:bg-mascate-50 transition-colors"
+                  title="Adicionar nova categoria"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
 
             <Input
@@ -179,12 +266,13 @@ export const ProdutosPage: React.FC = () => {
               <Button type="submit" variant="primary" className="flex-1 bg-mascate-green text-white hover:bg-green-700 border-mascate-green">
                 {editingProduct ? '💾 Salvar Alterações' : '➕ Criar Produto'}
               </Button>
-              <Button 
-                type="button" 
-                variant="secondary" 
+              <Button
+                type="button"
+                variant="secondary"
                 onClick={() => {
                   setShowForm(false);
                   setEditingProduct(null);
+                  resetForm();
                 }}
               >
                 ❌ Cancelar
@@ -281,6 +369,105 @@ export const ProdutosPage: React.FC = () => {
           </div>
         </Card>
       )}
+
+      {/* Modal para criar nova categoria */}
+      <Modal
+        isOpen={showCategoryModal}
+        onClose={() => {
+          setShowCategoryModal(false);
+          setNewCategoryForm({
+            name: '',
+            description: '',
+            icon: '',
+            color: '#3b82f6',
+          });
+        }}
+        title="Adicionar Nova Categoria"
+        size="md"
+      >
+        <form onSubmit={handleCreateCategory} className="space-y-4">
+          <Input
+            label="Nome da Categoria *"
+            value={newCategoryForm.name}
+            onChange={(e) => setNewCategoryForm(prev => ({ ...prev, name: e.target.value }))}
+            placeholder="Ex: Eletrônicos, Roupas, Livros..."
+            required
+          />
+
+          <div>
+            <label className="form-label">Descrição</label>
+            <textarea
+              className="form-input"
+              value={newCategoryForm.description}
+              onChange={(e) => setNewCategoryForm(prev => ({ ...prev, description: e.target.value }))}
+              placeholder="Descrição opcional da categoria"
+              rows={3}
+            />
+          </div>
+
+          <Input
+            label="Ícone (Emoji)"
+            value={newCategoryForm.icon}
+            onChange={(e) => setNewCategoryForm(prev => ({ ...prev, icon: e.target.value }))}
+            placeholder="Ex: 📱, 👕, 📚..."
+            maxLength={10}
+          />
+
+          <div>
+            <label className="form-label">Cor</label>
+            <div className="flex items-center space-x-3">
+              <input
+                type="color"
+                value={newCategoryForm.color}
+                onChange={(e) => setNewCategoryForm(prev => ({ ...prev, color: e.target.value }))}
+                className="w-12 h-10 border border-gray-300 rounded cursor-pointer"
+              />
+              <span className="text-sm text-gray-600">{newCategoryForm.color}</span>
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                setShowCategoryModal(false);
+                setNewCategoryForm({
+                  name: '',
+                  description: '',
+                  icon: '',
+                  color: '#3b82f6',
+                });
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={createCategory.isPending}
+              className="bg-mascate-green text-white hover:bg-green-700 border-mascate-green"
+            >
+              {createCategory.isPending ? 'Criando...' : 'Criar Categoria'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={showConfirmModal}
+        onClose={() => {
+          setShowConfirmModal(false);
+          setProductToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title="Excluir Produto"
+        message={`Tem certeza que deseja remover ${productToDelete?.name}? Esta ação não pode ser desfeita.`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        variant="danger"
+        loading={deleteProduct.isPending}
+      />
     </div>
   );
 };

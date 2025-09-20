@@ -16,9 +16,9 @@ import {
 import type { User } from '@/types';
 
 interface UserFormData {
-  username: string;
   email: string;
   displayName: string;
+  password?: string;
   avatarId: string;
   role: 'user' | 'admin' | 'superadmin';
   active: boolean;

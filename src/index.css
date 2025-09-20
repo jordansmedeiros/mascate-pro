@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Modal Animation */
+@keyframes modalSlideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 /* Custom styles for Mascate Runeria */
 @layer base {
   body {

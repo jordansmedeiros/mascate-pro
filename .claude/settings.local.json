@@ -25,7 +25,9 @@
       "Bash(nslookup:*)",
       "Bash(timeout:*)",
       "Bash(findstr:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(npm run migrate:*)",
+      "Bash(npm run dev:full:*)"
     ],
     "deny": [],
     "ask": []

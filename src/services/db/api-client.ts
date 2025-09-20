@@ -1,4 +1,4 @@
-import type { User, Product, StockMovement, ActivityLog } from '@/types';
+import type { User, Product, StockMovement, ActivityLog, Category, CategoryFormData } from '@/types';
 
 export interface DatabaseService {
   init(): Promise<void>;
@@ -14,6 +14,12 @@ export interface DatabaseService {
   updateUser(id: string, updates: Partial<User>): Promise<User>;
   deleteUser(id: string): Promise<void>;
 
+  getCategories(): Promise<Category[]>;
+  getCategoryById(id: string): Promise<Category | null>;
+  createCategory(category: CategoryFormData): Promise<Category>;
+  updateCategory(id: string, updates: Partial<Category>): Promise<Category>;
+  deleteCategory(id: string): Promise<void>;
+
   getProducts(): Promise<Product[]>;
   getProductById(id: string): Promise<Product | null>;
   createProduct(product: Omit<Product, 'id' | 'created_at'>): Promise<Product>;
@@ -25,6 +31,16 @@ export interface DatabaseService {
 
   getActivityLogs(): Promise<ActivityLog[]>;
   createActivityLog(log: Omit<ActivityLog, 'id' | 'created_at'>): Promise<ActivityLog>;
+
+  // System methods
+  getSystemInfo(): Promise<any>;
+  createBackup(): Promise<Blob>;
+  exportData(format: 'csv' | 'json'): Promise<Blob>;
+  cleanupData(type: 'logs' | 'movements'): Promise<any>;
+
+  // Configuration methods
+  getConfiguration(key: string): Promise<any>;
+  saveConfiguration(key: string, value: any, description?: string): Promise<any>;
 
   exportDatabase(): Promise<Uint8Array>;
   importDatabase(data: Uint8Array): Promise<void>;
@@ -171,6 +187,48 @@ class ApiDatabaseService implements DatabaseService {
     });
   }
 
+  // Category methods
+  async getCategories(): Promise<Category[]> {
+    return this.request<Category[]>('/categories');
+  }
+
+  async getCategoryById(id: string): Promise<Category | null> {
+    try {
+      return await this.request<Category>(`/categories/${encodeURIComponent(id)}`);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('404')) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  async createCategory(category: CategoryFormData): Promise<Category> {
+    return this.request<Category>('/categories', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(category),
+    });
+  }
+
+  async updateCategory(id: string, updates: Partial<Category>): Promise<Category> {
+    return this.request<Category>(`/categories/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async deleteCategory(id: string): Promise<void> {
+    await this.request(`/categories/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    });
+  }
+
   // Product methods
   async getProducts(): Promise<Product[]> {
     return this.request<Product[]>('/products');
@@ -267,6 +325,62 @@ class ApiDatabaseService implements DatabaseService {
 
     // TODO: Implementar endpoint de import se necessário
     throw new Error('Import via API não implementado ainda');
+  }
+
+  // System methods
+  async getSystemInfo(): Promise<any> {
+    return this.request<any>('/system/info');
+  }
+
+  async createBackup(): Promise<Blob> {
+    const response = await fetch(`${this.baseUrl}/system/backup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.blob();
+  }
+
+  async exportData(format: 'csv' | 'json'): Promise<Blob> {
+    const response = await fetch(`${this.baseUrl}/system/export/${format}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.blob();
+  }
+
+  async cleanupData(type: 'logs' | 'movements'): Promise<any> {
+    return this.request<any>(`/system/cleanup/${type}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Configuration methods
+  async getConfiguration(key: string): Promise<any> {
+    return this.request<any>(`/config/${key}`);
+  }
+
+  async saveConfiguration(key: string, value: any, description?: string): Promise<any> {
+    return this.request<any>(`/config/${key}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ value, description }),
+    });
   }
 }
 

@@ -5,7 +5,6 @@ export const userRoleSchema = z.enum(['superadmin', 'admin', 'user']);
 
 export const userSchema = z.object({
   id: z.string().uuid(),
-  username: z.string().min(3).max(50),
   email: z.string().email(),
   displayName: z.string().min(1).max(100),
   avatarId: z.string().optional(),
@@ -23,11 +22,10 @@ export const loginSchema = z.object({
 });
 
 export const registerSchema = z.object({
-  username: z
+  displayName: z
     .string()
-    .min(3, 'Nome de usuário deve ter pelo menos 3 caracteres')
-    .max(50, 'Nome de usuário deve ter no máximo 50 caracteres')
-    .regex(/^[a-zA-Z0-9_]+$/, 'Nome de usuário pode conter apenas letras, números e underscore'),
+    .min(2, 'Nome de exibição deve ter pelo menos 2 caracteres')
+    .max(100, 'Nome de exibição deve ter no máximo 100 caracteres'),
   email: z.string().email('Por favor, insira um email válido'),
   password: z
     .string()
@@ -49,6 +47,39 @@ export const changePasswordSchema = z.object({
 }).refine((data) => data.new_password === data.confirm_password, {
   message: 'As senhas não coincidem',
   path: ['confirm_password'],
+});
+
+// Category Schemas
+export const categorySchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1).max(100),
+  description: z.string().optional(),
+  icon: z.string().max(50).optional(),
+  color: z.string().max(20).optional(),
+  active: z.boolean(),
+  created_at: z.string().datetime(),
+  updated_at: z.string().datetime().optional(),
+  created_by: z.string().uuid(),
+});
+
+export const categoryFormSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'Nome da categoria é obrigatório')
+    .max(100, 'Nome deve ter no máximo 100 caracteres')
+    .trim(),
+  description: z
+    .string()
+    .max(500, 'Descrição deve ter no máximo 500 caracteres')
+    .optional(),
+  icon: z
+    .string()
+    .max(50, 'Ícone deve ter no máximo 50 caracteres')
+    .optional(),
+  color: z
+    .string()
+    .max(20, 'Cor deve ter no máximo 20 caracteres')
+    .optional(),
 });
 
 // Product Schemas
@@ -213,6 +244,7 @@ export const envSchema = z.object({
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RegisterFormData = z.infer<typeof registerSchema>;
 export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
+export type CategoryFormData = z.infer<typeof categoryFormSchema>;
 export type ProductFormData = z.infer<typeof productFormSchema>;
 export type StockMovementFormData = z.infer<typeof stockMovementFormSchema>;
 export type ProductsQueryParams = z.infer<typeof productsQuerySchema>;
