@@ -776,7 +776,7 @@ app.get('/api/categories/:id', async (req, res) => {
 });
 
 app.post('/api/categories', async (req, res) => {
-  console.log('POST /api/categories request received:', req.body);
+  console.log('🎯 POST /api/categories NOVO ENDPOINT:', req.body);
 
   let client;
   try {
