@@ -216,8 +216,8 @@ app.get('/api/products', async (req, res) => {
     if (id) {
       // Get product by ID
       const result = await client.query(`
-        SELECT id, name, description, category, unit, price, current_stock, min_stock, max_stock,
-               barcode, active, created_at, updated_at
+        SELECT id, name, category, unit, packaging, purchase_price, sale_price,
+               current_stock, minimum_stock, active, created_at, updated_at, created_by
         FROM mascate_pro.products
         WHERE id = $1
       `, [id]);
@@ -231,8 +231,8 @@ app.get('/api/products', async (req, res) => {
 
     // Get all products
     const result = await client.query(`
-      SELECT id, name, description, category, unit, price, current_stock, min_stock, max_stock,
-             barcode, active, created_at, updated_at
+      SELECT id, name, category, unit, packaging, purchase_price, sale_price,
+             current_stock, minimum_stock, active, created_at, updated_at, created_by
       FROM mascate_pro.products
       ORDER BY name ASC
     `);
