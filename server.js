@@ -15,8 +15,8 @@ const __dirname = path.dirname(__filename);
 const pool = new Pool({
   user: process.env.POSTGRES_USER || 'postgres',
   password: process.env.POSTGRES_PASSWORD || '4c6c4d5fb548a9cb',
-  host: process.env.POSTGRES_HOST || 'postgres.platform.sinesys.app',
-  port: parseInt(process.env.POSTGRES_PORT || '15432'),
+  host: process.env.POSTGRES_HOST || 'srv-captain--postgres',
+  port: parseInt(process.env.POSTGRES_PORT || '5432'),
   database: process.env.POSTGRES_DB || 'postgres',
   ssl: false,
   max: 10,
