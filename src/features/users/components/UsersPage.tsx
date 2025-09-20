@@ -34,9 +34,9 @@ export const UsersPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<UserFormData>({
-    username: '',
     email: '',
     displayName: '',
+    password: '',
     avatarId: AVAILABLE_AVATARS[0].id,
     role: 'user',
     active: true
