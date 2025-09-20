@@ -1,61 +1,56 @@
-#!/usr/bin/env node
-import pg from 'pg';
+import pkg from 'pg';
+import dotenv from 'dotenv';
 
-const { Client } = pg;
+dotenv.config();
+
+const { Pool } = pkg;
+
+const poolConfig = {
+  user: process.env.POSTGRES_USER || 'postgres',
+  password: process.env.POSTGRES_PASSWORD || '4c6c4d5fb548a9cb',
+  host: process.env.POSTGRES_HOST || 'postgres.platform.sinesys.app',
+  port: parseInt(process.env.POSTGRES_PORT || '15432'),
+  database: process.env.POSTGRES_DB || 'postgres',
+  ssl: process.env.POSTGRES_SSL === 'true' ? { rejectUnauthorized: false } : false,
+};
+
+const pool = new Pool(poolConfig);
 
 async function checkUsers() {
-  const client = new Client({
-    user: 'postgres',
-    password: '4c6c4d5fb548a9cb',
-    host: 'postgres.platform.sinesys.app',
-    port: 15432,
-    database: 'postgres',
-    ssl: false,
-    connectionTimeoutMillis: 10000
-  });
+  const client = await pool.connect();
 
   try {
-    await client.connect();
     console.log('🔍 Verificando usuários no banco...');
 
     const result = await client.query(`
-      SELECT id, username, email, display_name, role, active, created_at
+      SELECT id, email, display_name, role, active
       FROM mascate_pro.users
-      ORDER BY created_at ASC
+      ORDER BY role, email
     `);
 
-    if (result.rows.length === 0) {
-      console.log('❌ NENHUM USUÁRIO ENCONTRADO!');
-      console.log('');
-      console.log('🔧 Execute: node scripts/setup-postgresql.js');
-      console.log('   Para criar o usuário admin padrão');
-    } else {
-      console.log(`✅ Encontrados ${result.rows.length} usuário(s):`);
-      console.log('');
-      result.rows.forEach((user, index) => {
-        console.log(`👤 ${index + 1}. ${user.username} (${user.email})`);
-        console.log(`   Role: ${user.role}`);
-        console.log(`   Active: ${user.active}`);
-        console.log(`   ID: ${user.id}`);
-        console.log(`   Created: ${user.created_at.toISOString()}`);
-        console.log('');
-      });
+    console.log('👥 Usuários encontrados:');
+    result.rows.forEach(user => {
+      console.log(`- ${user.email} | ${user.display_name} | Role: ${user.role} | Ativo: ${user.active}`);
+    });
 
-      // Mostrar credenciais de login
-      const adminUser = result.rows.find(user => user.role === 'superadmin');
-      if (adminUser) {
-        console.log('🔑 CREDENCIAIS DE LOGIN:');
-        console.log(`   Email: ${adminUser.email}`);
-        console.log(`   Senha: NÃO DEFINIDA (precisamos implementar autenticação!)`);
-        console.log('');
+    const superadmins = result.rows.filter(u => u.role === 'superadmin' && u.active);
+    console.log(`\n🎯 Superadmins ativos: ${superadmins.length}`);
+
+    if (superadmins.length === 0) {
+      console.log('⚠️ PROBLEMA: Nenhum superadmin ativo encontrado!');
+
+      const admins = result.rows.filter(u => u.role === 'admin' && u.active);
+      console.log(`📋 Admins ativos: ${admins.length}`);
+
+      if (admins.length > 0) {
+        console.log('💡 Sugestão: Promover um admin para superadmin');
       }
     }
 
-  } catch (error) {
-    console.error('❌ Erro:', error.message);
   } finally {
-    await client.end();
+    client.release();
+    await pool.end();
   }
 }
 
-checkUsers();
+checkUsers().catch(console.error);

@@ -796,22 +796,33 @@ app.post('/api/categories', async (req, res) => {
       return res.status(400).json({ error: 'Nome da categoria é obrigatório' });
     }
 
-    // Get admin user ID for created_by
-    const adminResult = await client.query(
-      "SELECT id FROM mascate_pro.users WHERE email = 'admin@mascate.com'"
+    // Get any superadmin user ID for created_by
+    console.log('🔍 Buscando usuário superadmin...');
+    const superadminResult = await client.query(
+      "SELECT id, email, display_name, role, active FROM mascate_pro.users WHERE role = 'superadmin' AND active = true LIMIT 1"
     );
 
-    if (adminResult.rows.length === 0) {
-      return res.status(500).json({ error: 'Usuário administrador não encontrado' });
+    console.log('📊 Resultado da busca superadmin:', {
+      rowCount: superadminResult.rows.length,
+      users: superadminResult.rows
+    });
+
+    if (superadminResult.rows.length === 0) {
+      // Debug: vamos verificar todos os usuários
+      const allUsersResult = await client.query("SELECT id, email, role, active FROM mascate_pro.users ORDER BY role");
+      console.log('🔍 Todos os usuários no banco:', allUsersResult.rows);
+
+      return res.status(500).json({ error: 'Nenhum usuário superadmin ativo encontrado' });
     }
 
-    const adminId = adminResult.rows[0].id;
+    const createdById = superadminResult.rows[0].id;
+    console.log('✅ Usando usuário para created_by:', superadminResult.rows[0].email);
 
     const result = await client.query(`
       INSERT INTO mascate_pro.categories (name, description, icon, color, created_by)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING id, name, description, icon, color, active, created_at, updated_at
-    `, [name, description || null, icon || null, color || null, adminId]);
+    `, [name, description || null, icon || null, color || null, createdById]);
 
     return res.status(201).json(result.rows[0]);
 
@@ -1265,16 +1276,16 @@ app.post('/api/config/:key', async (req, res) => {
       return res.status(400).json({ error: 'Valor da configuração é obrigatório' });
     }
 
-    // Get admin user ID
-    const adminResult = await client.query(
-      "SELECT id FROM mascate_pro.users WHERE email = 'admin@mascate.com'"
+    // Get any superadmin user ID for created_by
+    const superadminResult = await client.query(
+      "SELECT id FROM mascate_pro.users WHERE role = 'superadmin' AND active = true LIMIT 1"
     );
 
-    if (adminResult.rows.length === 0) {
-      return res.status(500).json({ error: 'Usuário administrador não encontrado' });
+    if (superadminResult.rows.length === 0) {
+      return res.status(500).json({ error: 'Nenhum usuário superadmin ativo encontrado' });
     }
 
-    const adminId = adminResult.rows[0].id;
+    const createdById = superadminResult.rows[0].id;
 
     // Upsert configuration
     const result = await client.query(`
@@ -1286,7 +1297,7 @@ app.post('/api/config/:key', async (req, res) => {
         description = COALESCE(EXCLUDED.description, configurations.description),
         updated_at = CURRENT_TIMESTAMP
       RETURNING key, value, description, updated_at
-    `, [key, JSON.stringify(value), description, adminId]);
+    `, [key, JSON.stringify(value), description, createdById]);
 
     return res.json(result.rows[0]);
 
