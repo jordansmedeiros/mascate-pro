@@ -206,6 +206,128 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
+// Create user endpoint
+app.post('/api/users', async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const { username, email, display_name, role, active } = req.body;
+
+    if (!username || !email || !display_name) {
+      return res.status(400).json({ error: 'Username, email e display_name são obrigatórios' });
+    }
+
+    const result = await client.query(`
+      INSERT INTO mascate_pro.users (username, email, display_name, role, active)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING id, username, email, display_name as "displayName", avatar_id as "avatarId",
+                role, active, created_at, updated_at
+    `, [username, email, display_name, role || 'user', active !== false]);
+
+    return res.status(201).json(result.rows[0]);
+
+  } catch (error) {
+    console.error('Create user error:', error);
+    if (error.code === '23505') { // Unique constraint violation
+      return res.status(400).json({ error: 'Email ou username já existe' });
+    }
+    return res.status(500).json({ error: 'Erro interno do servidor' });
+  } finally {
+    client.release();
+  }
+});
+
+// Update user endpoint
+app.put('/api/users', async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const { id } = req.query;
+    const updates = req.body;
+
+    if (!id) {
+      return res.status(400).json({ error: 'ID do usuário é obrigatório' });
+    }
+
+    // Build dynamic update query
+    const updateFields = [];
+    const values = [];
+    let valueIndex = 1;
+
+    for (const [key, value] of Object.entries(updates)) {
+      if (['username', 'email', 'display_name', 'avatar_id', 'role', 'active'].includes(key)) {
+        updateFields.push(`${key} = $${valueIndex}`);
+        values.push(value);
+        valueIndex++;
+      }
+    }
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({ error: 'Nenhum campo válido para atualizar' });
+    }
+
+    updateFields.push('updated_at = CURRENT_TIMESTAMP');
+    values.push(id);
+
+    const result = await client.query(`
+      UPDATE mascate_pro.users
+      SET ${updateFields.join(', ')}
+      WHERE id = $${valueIndex}
+      RETURNING id, username, email, display_name as "displayName", avatar_id as "avatarId",
+                role, active, created_at, updated_at
+    `, values);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    return res.json(result.rows[0]);
+
+  } catch (error) {
+    console.error('Update user error:', error);
+    if (error.code === '23505') { // Unique constraint violation
+      return res.status(400).json({ error: 'Email ou username já existe' });
+    }
+    return res.status(500).json({ error: 'Erro interno do servidor' });
+  } finally {
+    client.release();
+  }
+});
+
+// Delete user endpoint
+app.delete('/api/users', async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const { id } = req.query;
+
+    if (!id) {
+      return res.status(400).json({ error: 'ID do usuário é obrigatório' });
+    }
+
+    const result = await client.query(`
+      DELETE FROM mascate_pro.users
+      WHERE id = $1
+      RETURNING id
+    `, [id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    return res.status(204).send();
+
+  } catch (error) {
+    console.error('Delete user error:', error);
+    if (error.code === '23503') { // Foreign key constraint violation
+      return res.status(400).json({ error: 'Não é possível deletar usuário com produtos ou movimentações associadas' });
+    }
+    return res.status(500).json({ error: 'Erro interno do servidor' });
+  } finally {
+    client.release();
+  }
+});
+
 // Products endpoint
 app.get('/api/products', async (req, res) => {
   const client = await pool.connect();
@@ -226,7 +348,14 @@ app.get('/api/products', async (req, res) => {
         return res.status(404).json({ error: 'Produto não encontrado' });
       }
 
-      return res.json(result.rows[0]);
+      // Convert decimal fields to numbers
+      const product = {
+        ...result.rows[0],
+        purchase_price: parseFloat(result.rows[0].purchase_price),
+        sale_price: parseFloat(result.rows[0].sale_price)
+      };
+
+      return res.json(product);
     }
 
     // Get all products
@@ -237,7 +366,14 @@ app.get('/api/products', async (req, res) => {
       ORDER BY name ASC
     `);
 
-    return res.json(result.rows);
+    // Convert decimal fields to numbers
+    const products = result.rows.map(product => ({
+      ...product,
+      purchase_price: parseFloat(product.purchase_price),
+      sale_price: parseFloat(product.sale_price)
+    }));
+
+    return res.json(products);
 
   } catch (error) {
     console.error('Products error:', error);
