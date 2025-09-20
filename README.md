@@ -1,32 +1,32 @@
-# 🏆 Mascate Runeria - Controle de Caixa
+# Mascate Runeria - Controle de Caixa
 
 **Sistema SIMPLES de controle de estoque para casa noturna**
 Uma aplicação **super simples e rápida** para controle dos pequenos itens vendidos no caixa da casa noturna (seda, cigarros, chocolates, balas, etc.).
 
-> 🎯 **FOCO**: Dar baixa rápida nos produtos vendidos. Não é um PDV profissional, é apenas para controlar os "negocinho do caixa"!
+> **FOCO**: Dar baixa rápida nos produtos vendidos. Não é um PDV profissional, é apenas para controlar os "negocinho do caixa"!
 
-## ✨ Features (Simplicidade em Primeiro Lugar!)
+## Features (Simplicidade em Primeiro Lugar!)
 
-### 💰 **VENDAS RÁPIDAS** (Funcionalidade Principal)
+### **VENDAS RÁPIDAS** (Funcionalidade Principal)
 
 - **Botões rápidos**: -1, -2, -5 para vendas comuns
 - **Input personalizado**: Para quantidades específicas
 - **Visual claro**: Estoque atual bem visível
 - **Alertas automáticos**: Quando o produto está acabando
 
-### 📦 **Gerenciamento de Produtos**
+### **Gerenciamento de Produtos**
 
 - **Cadastro simples**: Nome, categoria, preços, estoque
 - **Visualização em cards**: Fácil de ver e editar
 - **Categorias básicas**: Doce, Fumo, Bebida, Outros
 
-### 📈 **Controles Básicos**
+### **Controles Básicos**
 
 - **Dashboard**: Visão geral do estoque
 - **Autenticação**: Login simples (admin/admin para desenvolvimento)
 - **Responsivo**: Funciona no celular e computador
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 
@@ -54,7 +54,7 @@ Uma aplicação **super simples e rápida** para controle dos pequenos itens ven
 - **Husky** - Git hooks
 - **GitHub Actions** - CI/CD
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Pré-requisitos
 
@@ -98,7 +98,7 @@ VITE_APP_VERSION=1.0.0
 VITE_NODE_ENV=development
 ```
 
-## 📖 Scripts Disponíveis
+## Scripts Disponíveis
 
 ```bash
 # Desenvolvimento
@@ -121,37 +121,37 @@ npm run test:ui       # Interface gráfica dos testes
 npm run test:coverage # Relatório de cobertura
 ```
 
-## 🏗️ Arquitetura
+## Arquitetura
 
 O projeto segue os princípios SOLID e arquitetura baseada em features:
 
 ```
 src/
-├── app/              # Configuração global da aplicação
-├── features/         # Módulos organizados por domínio
-│   ├── auth/         # Autenticação e autorização
-│   ├── dashboard/    # Dashboard e estatísticas
-│   ├── products/     # Gerenciamento de produtos
-│   ├── stock/        # Movimentação de estoque
-│   ├── users/        # Gestão de usuários
-│   └── logs/         # Logs e auditoria
-├── components/       # Componentes reutilizáveis
-│   ├── ui/           # Componentes base (Button, Card, etc.)
-│   └── layout/       # Componentes de layout
-├── services/         # Serviços e integrações
-├── types/            # Definições de tipos TypeScript
-├── utils/            # Utilitários gerais
-└── test/             # Configuração de testes
+|-- app/              # Configuração global da aplicação
+|-- features/         # Módulos organizados por domínio
+|   |-- auth/         # Autenticação e autorização
+|   |-- dashboard/    # Dashboard e estatísticas
+|   |-- products/     # Gerenciamento de produtos
+|   |-- stock/        # Movimentação de estoque
+|   |-- users/        # Gestão de usuários
+|   \-- logs/         # Logs e auditoria
+|-- components/       # Componentes reutilizáveis
+|   |-- ui/           # Componentes base (Button, Card, etc.)
+|   \-- layout/       # Componentes de layout
+|-- services/         # Serviços e integrações
+|-- types/            # Definições de tipos TypeScript
+|-- utils/            # Utilitários gerais
+\-- test/             # Configuração de testes
 
 api/                  # Vercel Serverless Functions
-├── auth.ts           # Autenticação
-├── db.ts             # Conexão com o banco de dados
-├── products.ts       # CRUD de produtos
-├── stock-movements.ts# Movimentação de estoque
-└── users.ts          # CRUD de usuários
+|-- auth.ts           # Autenticação
+|-- db.ts             # Conexão com o banco de dados
+|-- products.ts       # CRUD de produtos
+|-- stock-movements.ts# Movimentação de estoque
+\-- users.ts          # CRUD de usuários
 ```
 
-## 🔐 Sistema de Autenticação
+## Sistema de Autenticação
 
 ### Roles de Usuário
 
@@ -159,13 +159,13 @@ api/                  # Vercel Serverless Functions
 - **Admin**: Gerenciamento de produtos e estoque (sem gestão de usuários)
 - **User**: Visualização e operações básicas de estoque
 
-### 🔑 Credenciais de Desenvolvimento
+### Credenciais de Desenvolvimento
 
 - **Usuário**: `admin`
 - **Senha**: `admin`
 - **Acesso**: Superadmin (acesso total)
 
-## 📊 Funcionalidades Principais
+## Funcionalidades Principais
 
 ### Dashboard
 
@@ -185,17 +185,17 @@ api/                  # Vercel Serverless Functions
 ### Controle de Estoque
 
 - Tipos de movimentação:
-  - 💰 **Venda** - Redução por venda ao cliente
-  - 📦 **Entrada** - Reposição de estoque
-  - ⚙️ **Ajuste** - Correção manual
-  - 🔄 **Devolução** - Retorno de produtos
-  - ⚠️ **Perda** - Produtos danificados/perdidos
+  - **Venda** - Redução por venda ao cliente
+  - **Entrada** - Reposição de estoque
+  - **Ajuste** - Correção manual
+  - **Devolução** - Retorno de produtos
+  - **Perda** - Produtos danificados/perdidos
 
-## 部署 (Deployment)
+## Deployment
 
 O projeto é deployado na Vercel. As Serverless Functions na pasta `api` são usadas para se comunicar com o banco de dados PostgreSQL.
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork o projeto
 2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
@@ -210,13 +210,13 @@ O projeto é deployado na Vercel. As Serverless Functions na pasta `api` são us
 - Escreva testes para novas funcionalidades
 - Documentação em português para business logic
 
-## 📄 License
+## License
 
 Este projeto está sob a licença MIT.
 
-## 🆘 Suporte
+## Suporte
 
 Para suporte técnico ou dúvidas sobre implementação:
 
-- 🐛 Issues: GitHub Issues
-- 📖 Documentação técnica: consulte a pasta `/docs` para detalhes de arquitetura, migração, padrões e integrações.
+- Issues: GitHub Issues
+- Documentação técnica: consulte a pasta `/docs` para detalhes de arquitetura, migração, padrões e integrações.
