@@ -428,13 +428,15 @@ export const ProdutosPage: React.FC = () => {
           />
 
           <div>
-            <label className="form-label">Descrição</label>
+            <label htmlFor="category-description" className="form-label">Descrição</label>
             <textarea
+              id="category-description"
               className="form-input"
               value={newCategoryForm.description}
               onChange={(e) => setNewCategoryForm(prev => ({ ...prev, description: e.target.value }))}
               placeholder="Descrição opcional da categoria"
               rows={3}
+              aria-label="Descrição da categoria"
             />
           </div>
 
@@ -447,13 +449,15 @@ export const ProdutosPage: React.FC = () => {
           />
 
           <div>
-            <label className="form-label">Cor</label>
+            <label htmlFor="category-color" className="form-label">Cor</label>
             <div className="flex items-center space-x-3">
               <input
+                id="category-color"
                 type="color"
                 value={newCategoryForm.color}
                 onChange={(e) => setNewCategoryForm(prev => ({ ...prev, color: e.target.value }))}
                 className="w-12 h-10 border border-gray-300 rounded cursor-pointer"
+                aria-label="Selecionar cor da categoria"
               />
               <span className="text-sm text-gray-600">{newCategoryForm.color}</span>
             </div>
